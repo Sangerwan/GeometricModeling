@@ -3,12 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using static GeometricClass;
 
-public class GeometricServices : MonoBehaviour
+public static class GeometricServices
 {
-	SerializeField[sdj;
 
-
-    bool InterSegmentPlane(Segment segment, GeometricClass.Plane plane, out Vector3 interpt, out Vector3 interNormal)
+    public static bool InterSegmentPlane(Segment segment, GeometricClass.Plane plane, out Vector3 interpt, out Vector3 interNormal)
     {
 		interpt = new Vector3();
 		interNormal = new Vector3();
