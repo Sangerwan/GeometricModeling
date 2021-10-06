@@ -6,18 +6,18 @@ public static class GeometricClass
 {
     public struct Segment
     {
-        Vector3 pt1;
-        Vector3 pt2;
+        public Vector3 pt1;
+        public Vector3 pt2;
     }
 
     public struct Plane
     {
-        Vector3 norm;
-        float d;
+        public Vector3 Normal;
+        public float d;
     }
     public struct Sphere
     {
-        Vector3 center;
-        float radius;
+        public Vector3 center;
+        public float radius;
     }
 }
