@@ -39,4 +39,14 @@ public static class GeometricServices
 		}
 		return true;
 	}
+
+	public static void DrawSegment(Segment seg)
+    {
+		Debug.DrawLine(seg.pt1, seg.pt2,Color.red,10);
+    }
+
+	//public static void DrawPlane(GeometricClass.Plane plane)
+	//{
+	//	Debug.DrawSurface(seg.pt1, seg.pt2, Color.red);
+	//}
 }
