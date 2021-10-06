@@ -5,8 +5,25 @@ using static GeometricClass;
 
 public class GeometricServices : MonoBehaviour
 {
-	SerializeField[sdj;
+	public GameObject ptA;
+	public GameObject ptB;
 
+    private void Start()
+    {
+		Segment seg = new Segment();
+		seg.pt1 = ptA.transform.position;
+		seg.pt2 = ptB.transform.position;
+		GeometricClass.Plane plane = new GeometricClass.Plane();
+		plane.Normal = new Vector3(0, 0, 1);
+		plane.d = 1;
+		Vector3 interpt, interNormal;
+		bool test;
+		test=InterSegmentPlane(seg, plane, out interpt,out interNormal);
+		Debug.Log(test);
+		Debug.Log(interpt);
+		Debug.Log(interNormal);
+
+	}
 
     bool InterSegmentPlane(Segment segment, GeometricClass.Plane plane, out Vector3 interpt, out Vector3 interNormal)
     {
