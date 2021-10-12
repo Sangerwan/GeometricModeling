@@ -19,24 +19,22 @@ public class TestManager : MonoBehaviour
 
     // Update is called once per frame
     void Start()
-    {
-       
+    {       
         Vector3 norm = new Vector3(0, 1, 0);
         float d = 1;
         GeometricClass.Plane plane = new GeometricClass.Plane { Normal = norm, d = d };
         Vector3 interpt;
         Vector3 interNormal;
         bool test =  InterSegmentPlane( AB, plane, out interpt, out interNormal);
-        
 
 
-
-        GeometricClass.Circle circle = new GeometricClass.Circle { radius = (float)(sphere.transform.localScale.x), center = new Vector3(0,0,0) };
+        Debug.Log("scale: " + sphere.gameObject.transform.localScale.x);
+        GeometricClass.Circle circle = new GeometricClass.Circle { radius = sphere.gameObject.transform.localScale.x, center = new Vector3(0,0,0) };
         test = InterSegmentCircle(AB, circle, out interpt, out interNormal);
         Debug.Log(test);
         Debug.Log(interpt);
         Instantiate(obj, interpt, new Quaternion());
-        Instantiate(sphere, circle.center, new Quaternion());
+        Instantiate(sphere,  circle.center, new Quaternion());
 
 
     }

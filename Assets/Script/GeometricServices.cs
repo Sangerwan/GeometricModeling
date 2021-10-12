@@ -46,17 +46,19 @@ public static class GeometricServices
 		interNormal = new Vector3();
 		//1
 		Vector3 AB = segment.pt2 - segment.pt1; 
-		Vector3 OA = segment.pt1 - circle.center;
+		Vector3 OmgA = segment.pt1 - circle.center;
 		float R = circle.radius;
-		float t1 = (-Vector3.SqrMagnitude(OA) * Mathf.Cos(Vector3.Angle(OA, AB)) + R)/ Vector3.SqrMagnitude(AB);
-		float t2 = (-Vector3.SqrMagnitude(OA) * Mathf.Cos(Vector3.Angle(OA, AB)) + R) / Vector3.SqrMagnitude(AB);
-		Vector3 M = OA + t1 * AB;
+		Debug.Log("Radius:" + R);
+		float t1 = (-Vector3.Magnitude(OmgA) * Mathf.Cos(Vector3.Angle(OmgA, AB)) + R)/ Vector3.Magnitude(AB);
+		float t2 = (-Vector3.Magnitude(OmgA) * Mathf.Cos(Vector3.Angle(OmgA, AB)) + R) / Vector3.Magnitude(AB);
+		
 		if (t1 < 0 || t1 > 1)
 		{
 			return false;
 		}
 		//5
-		interpt = segment.pt1 + t1 * AB;
+		//interpt = segment.pt1 + t1 * AB;
+		interpt = OmgA + t1 * AB;
 		//interNormal = plane.Normal;
 		return true;
 	}
