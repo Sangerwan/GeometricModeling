@@ -40,6 +40,27 @@ public static class GeometricServices
 		return true;
 	}
 
+	public static bool InterSegmentCircle(Segment segment, GeometricClass.Circle circle, out Vector3 interpt, out Vector3 interNormal)
+	{
+		interpt = new Vector3();
+		interNormal = new Vector3();
+		//1
+		Vector3 AB = segment.pt2 - segment.pt1; 
+		Vector3 OA = segment.pt1 - circle.center;
+		float R = circle.radius;
+		float t1 = (-Vector3.SqrMagnitude(OA) * Mathf.Cos(Vector3.Angle(OA, AB)) + R)/ Vector3.SqrMagnitude(AB);
+		float t2 = (-Vector3.SqrMagnitude(OA) * Mathf.Cos(Vector3.Angle(OA, AB)) + R) / Vector3.SqrMagnitude(AB);
+		Vector3 M = OA + t1 * AB;
+		if (t1 < 0 || t1 > 1)
+		{
+			return false;
+		}
+		//5
+		interpt = segment.pt1 + t1 * AB;
+		//interNormal = plane.Normal;
+		return true;
+	}
+
 	public static void DrawSegment(Segment seg)
     {
 		Debug.DrawLine(seg.pt1, seg.pt2,Color.red,10);
