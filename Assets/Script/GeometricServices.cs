@@ -68,22 +68,24 @@ public static class GeometricServices
 		Debug.DrawLine(seg.pt1, seg.pt2,Color.red,10);
     }
 
-	public static void InterCylinderSegment(Segment seg, Cylindre cyl, out Vector3 interpt, out Vector3 internormal)
+	public static bool InterCylinderSegment(Segment seg, Cylindre cyl, out Vector3 interpt, out Vector3 internormal)
     {
 		interpt = new Vector3();
-		interNormal = new Vector3();
+		internormal = new Vector3();
 		//1
 		Vector3 u = (cyl.pt2 - cyl.pt1) / Vector3.Magnitude(cyl.pt2 - cyl.pt1);
 		Vector3 AB = seg.pt2 - seg.pt1;
 		Vector3 PA = cyl.pt1 - seg.pt2;
-		float t1 = -((2 * AB * PA) * (1 - 4 * u * u + 3 * u * u * u * u) - Mathf.Sqrt(Mathf.Pow((2 * AB * PA) * (1 - 4 * u * u + 3 * u * u * u * u), 2)
-			- 4 * AB * AB * (1 - 2 * u * u + u * u * u * u) * (PA * PA * (1 - 2 * u * u + u * u * u * u) - cyl.radius)) / (2 * 4 * AB * AB * (1 - 2 * u * u + u * u * u * u)));
-		float t2 = -((2 * AB * PA) * (1 - 4 * u * u + 3 * u * u * u * u) + Mathf.Sqrt(Mathf.Pow((2 * AB * PA) * (1 - 4 * u * u + 3 * u * u * u * u), 2)
-			- 4 * AB * AB * (1 - 2 * u * u + u * u * u * u) * (PA * PA * (1 - 2 * u * u + u * u * u * u) - cyl.radius)) / (2 * 4 * AB * AB * (1 - 2 * u * u + u * u * u * u)));
+		
+		float t1 = -((2 * Vector3.Dot(AB,PA)) * (1 - 4 * Vector3.Dot(u, u) + 3 * Vector3.Dot(u, u) * Vector3.Dot(u, u)) - Mathf.Sqrt(Mathf.Pow((2 * Vector3.Dot(AB,PA)) * (1 - 4 * Vector3.Dot(u, u) + 3 * Vector3.Dot(u, u) * Vector3.Dot(u, u)), 2)
+			- 4 * Vector3.Dot(AB,AB) * (1 - 2 * Vector3.Dot(u, u) + Vector3.Dot(u, u) * Vector3.Dot(u, u)) * (Vector3.Dot(PA,PA) * (1 - 2 * Vector3.Dot(u, u) + Vector3.Dot(u, u) * Vector3.Dot(u, u)) - cyl.radius)) / (2 * 4 * Vector3.Dot(AB,AB) * (1 - 2 * Vector3.Dot(u, u) + Vector3.Dot(u, u) * Vector3.Dot(u, u))));
+		float t2 = -((2 * Vector3.Dot(AB,PA)) * (1 - 4 * Vector3.Dot(u, u) + 3 * Vector3.Dot(u, u) * Vector3.Dot(u, u)) + Mathf.Sqrt(Mathf.Pow((2 * Vector3.Dot(AB,PA)) * (1 - 4 * Vector3.Dot(u, u) + 3 * Vector3.Dot(u, u) * Vector3.Dot(u, u)), 2)
+			- 4 * Vector3.Dot(AB,AB) * (1 - 2 * Vector3.Dot(u, u) + Vector3.Dot(u, u) * Vector3.Dot(u, u)) * (Vector3.Dot(PA,PA) * (1 - 2 * Vector3.Dot(u, u) + Vector3.Dot(u, u) * Vector3.Dot(u, u)) - cyl.radius)) / (2 * 4 * Vector3.Dot(AB,AB) * (1 - 2 * Vector3.Dot(u, u) + Vector3.Dot(u, u) * Vector3.Dot(u, u))));
 		if (t1 < 0 || t1 > 1)
 		{
 			return false;
 		}
+		return true;
 	}
 
 	//public static void DrawPlane(GeometricClass.Plane plane)
