@@ -18,7 +18,11 @@ public class NewBehaviourScript : MonoBehaviour
 
     public HalfEdgeMesh VertexFaceToHalfEdge(Mesh mesh)
     {
+        return null;
+    }
 
+    public Mesh HalfEdgeToVertexFace(HalfEdgeMesh mesh)
+    {
         return null;
     }
 }
