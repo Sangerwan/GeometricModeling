@@ -26,19 +26,28 @@ public class MeshGenerator2 : MonoBehaviour
         }
         );*/
 
-        /*
-        m_Mf.sharedMesh = WrapNormalizePlane(200, 100,
-        (kX, kZ) => {
-            float rho = 2 * (1 + .25f * Mathf.Sin(kZ * Mathf.PI * 2 * 4));
-            float theta = kX * 2 * Mathf.PI;
-            float phi = (1 - kZ) * Mathf.PI;
-            return rho * new Vector3(Mathf.Cos(theta) * Mathf.Sin(phi), Mathf.Cos(phi), Mathf.Sin(theta) * Mathf.Sin(phi));
-        }
-        );
-        */
+
+        //m_Mf.sharedMesh = WrapNormalizePlane(200, 100,
+        //(kX, kZ) => {
+        //    float rho = 2 * (1 + .25f * Mathf.Sin(kZ * Mathf.PI * 2 * 4));
+        //    float theta = kX * 2 * Mathf.PI;
+        //    float phi = (1 - kZ) * Mathf.PI;
+        //    return rho * new Vector3(Mathf.Cos(theta) * Mathf.Sin(phi), Mathf.Cos(phi), Mathf.Sin(theta) * Mathf.Sin(phi));
+        //}
+        //);
+
         //m_Mf.sharedMesh = WrapNormalizePlaneQuads(20, 10, (kX, kZ) => new Vector3( (kX - 0.5f) * 4, Mathf.Sin(kX * Mathf.PI * 2 * 3), (kZ - .5f) * 2));
-        //m_Mf.sharedMesh = CreateStripXZQuads(new Vector3(4, 0, 2), 200);
-        m_Mf.sharedMesh = CreateRegularPolygonXZQuads(100, 40);
+        //m_Mf.sharedMesh = WrapNormalizePlaneQuads(20, 10, (kX, kZ) =>
+        //{
+        //    float rho = 2;
+        //    float theta = kX * 2 * Mathf.PI;
+        //    float phi = (1 - kZ) * Mathf.PI;
+        //    return new Vector3(rho * Mathf.Cos(theta), rho * Mathf.Cos(phi), rho * Mathf.Sin(theta) * Mathf.Sin(phi));
+        //    //return new Vector3(rho * Mathf.Sin(theta) * Mathf.Sin(phi), rho * Mathf.Cos(phi), rho * Mathf.Cos(theta));
+        //    //return new Vector3(rho * Mathf.Cos(theta), rho * Mathf.Cos(phi), rho * Mathf.Sin(theta) * Mathf.Sin(phi));
+        //});
+        m_Mf.sharedMesh = CreateStripXZQuads(new Vector3(4, 0, 2), 5);
+        //m_Mf.sharedMesh = CreateRegularPolygonXZQuads(100, 4);
         gameObject.AddComponent<MeshCollider>();
     }
     #region Triangles
@@ -258,6 +267,8 @@ public class MeshGenerator2 : MonoBehaviour
         newMesh.SetIndices(quads, MeshTopology.Quads, 0);
         newMesh.RecalculateBounds();
         newMesh.RecalculateNormals();
+        HalfEdgeMesh halfEdgeMesh = CatmullClark.VertexFaceToHalfEdge(newMesh);
+        //HalfEdgeMesh mesh = HalfEdgeMesh.VertexFaceToHalfEdgeMesh(newMesh);
         return newMesh;
     }
 
@@ -353,6 +364,8 @@ public class MeshGenerator2 : MonoBehaviour
         newMesh.SetIndices(quads, MeshTopology.Quads, 0);
         newMesh.RecalculateBounds();
         newMesh.RecalculateNormals();
+
+        
         return newMesh;
     }
     #endregion

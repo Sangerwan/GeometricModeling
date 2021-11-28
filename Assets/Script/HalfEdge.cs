@@ -2,31 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class NewBehaviourScript : MonoBehaviour
-{
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
-    public HalfEdgeMesh VertexFaceToHalfEdge(Mesh mesh)
-    {
-        return null;
-    }
-
-    public Mesh HalfEdgeToVertexFace(HalfEdgeMesh mesh)
-    {
-        return null;
-    }
-}
-
+/*
 public class Vertex
 {
     public int index;
@@ -36,7 +12,7 @@ public class Vertex
         this.index = i;
         this.position = v;
     }
-}
+}*/
 
 public class Face
 {
@@ -53,7 +29,7 @@ public class HalfEdge
 {
     public int index;
 
-    public Vertex source;
+    public Vector3 source;
 
     public HalfEdge prevEdge;
     public HalfEdge nextEdge;
@@ -61,13 +37,13 @@ public class HalfEdge
     public HalfEdge twinEdge;
 
     public Face face;
-    public HalfEdge(Vertex v, Face f)
+    public HalfEdge(Vector3 v, Face f)
     {
         this.source = v;
         this.face = f; 
     }
 
-    public HalfEdge(int i, Vertex source, HalfEdge prev, HalfEdge next, HalfEdge twin, Face face)
+    public HalfEdge(int i, Vector3 source, HalfEdge prev=null, HalfEdge next = null, HalfEdge twin = null, Face face = null)
     {
         this.index = i;
         this.source = source;
@@ -92,7 +68,10 @@ public class HalfEdgeMesh
 
     public bool hasUV() { return true; }
 
+
 }
+
+
 
 
 
