@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(MeshFilter))]
@@ -56,7 +54,9 @@ public class MeshGenerator : MonoBehaviour
 
          );
          Debug.Log(MeshDisplayInfo.ExportMeshCSV(m_Mf.sharedMesh));
-      // m_Mf.sharedMesh = WrapNormalizeCreatePlane(5, 5, (kX, kZ) => { return new Vector3(0, 0, 0); });
+        // m_Mf.sharedMesh = WrapNormalizeCreatePlane(5, 5, (kX, kZ) => { return new Vector3(0, 0, 0); });
+        gameObject.AddComponent<MeshCollider>();
+
     }
 
     Mesh CreateTriangle()
