@@ -267,7 +267,10 @@ public class MeshGenerator2 : MonoBehaviour
         newMesh.SetIndices(quads, MeshTopology.Quads, 0);
         newMesh.RecalculateBounds();
         newMesh.RecalculateNormals();
+        Debug.Log(MeshDisplayInfo2.ExportMeshCSV(newMesh));
         HalfEdgeMesh halfEdgeMesh = CatmullClark.VertexFaceToHalfEdge(newMesh);
+        Mesh mesh2 = CatmullClark.HalfEdgeToVertexFace(halfEdgeMesh);
+        Debug.Log(MeshDisplayInfo2.ExportMeshCSV(mesh2));
         //HalfEdgeMesh mesh = HalfEdgeMesh.VertexFaceToHalfEdgeMesh(newMesh);
         return newMesh;
     }

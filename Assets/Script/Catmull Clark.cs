@@ -82,18 +82,20 @@ public class CatmullClark : MonoBehaviour
         int[] quads;
         Vector3[] vertices = mesh.vertices;
         trianglesToQuads(mesh, out quads);
+
+        for(int i =0; i < vertices.Length; i++)
+        {
+            halfEdgeMesh.vertices.Add(vertices[i]);
+        }
+
         int index = 0;
 
         for (int i = 0; i < quads.Length / 4; i++)
         {
-            Vector3 vertex1 = vertices[quads[index]];
-            Vector3 vertex2 = vertices[quads[index + 1]];
-            Vector3 vertex3 = vertices[quads[index + 2]];
-            Vector3 vertex4 = vertices[quads[index + 3]];
-            halfEdgeMesh.vertices.Add(vertex1);
-            halfEdgeMesh.vertices.Add(vertex2);
-            halfEdgeMesh.vertices.Add(vertex3);
-            halfEdgeMesh.vertices.Add(vertex4); 
+            Vector3 vertex1 = halfEdgeMesh.vertices[quads[index]];
+            Vector3 vertex2 = halfEdgeMesh.vertices[quads[index + 1]];
+            Vector3 vertex3 = halfEdgeMesh.vertices[quads[index + 2]];
+            Vector3 vertex4 = halfEdgeMesh.vertices[quads[index + 3]];
 
             HalfEdge halfEdge1 = new HalfEdge(index, vertex1);
             HalfEdge halfEdge2 = new HalfEdge(index + 1, vertex2);
@@ -161,10 +163,29 @@ public class CatmullClark : MonoBehaviour
         return halfEdgeMesh;
 
     }
-    /*
+    
     public static Mesh HalfEdgeToVertexFace(HalfEdgeMesh halfEdgeMesh)
     {
+        Mesh newMesh = new Mesh();
         List<HalfEdge> edges = halfEdgeMesh.edges;
+        List<Vector3> vertices = halfEdgeMesh.vertices;
+        List<int> quads = new List<int>();
 
-    }*/
+        foreach( var face in halfEdgeMesh.faces)
+        {
+            quads.Add(vertices.FindIndex(x => x == face.edge.source));
+            quads.Add(vertices.FindIndex(x => x == face.edge.nextEdge.source));
+            quads.Add(vertices.FindIndex(x => x == face.edge.nextEdge.nextEdge.source));
+            quads.Add(vertices.FindIndex(x => x == face.edge.nextEdge.nextEdge.nextEdge.source));
+        }
+
+        newMesh.vertices = vertices.ToArray();
+        newMesh.SetIndices(quads, MeshTopology.Quads, 0);
+        newMesh.RecalculateBounds();
+        newMesh.RecalculateNormals();
+
+        return newMesh;
+       
+
+    }
 }
