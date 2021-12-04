@@ -2,17 +2,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-/*
+
 public class Vertex
 {
     public int index;
     public Vector3 position;
-    public Vertex(int i, Vector3 v)
+    public Vertex(Vector3 v = default(Vector3), int i = -1)
     {
         this.index = i;
         this.position = v;
     }
-}*/
+}
 
 public class Face
 {
@@ -29,7 +29,7 @@ public class HalfEdge
 {
     public int index;
 
-    public Vector3 source;
+    public Vertex source;
 
     public HalfEdge prevEdge;
     public HalfEdge nextEdge;
@@ -37,13 +37,13 @@ public class HalfEdge
     public HalfEdge twinEdge;
 
     public Face face;
-    public HalfEdge(Vector3 v, Face f)
+    public HalfEdge(Vertex v, Face f)
     {
         this.source = v;
         this.face = f; 
     }
 
-    public HalfEdge(int i, Vector3 source, HalfEdge prev=null, HalfEdge next = null, HalfEdge twin = null, Face face = null)
+    public HalfEdge(int i, Vertex source, HalfEdge prev=null, HalfEdge next = null, HalfEdge twin = null, Face face = null)
     {
         this.index = i;
         this.source = source;
@@ -60,7 +60,7 @@ public class HalfEdgeMesh
     int data = 0;
 
     public string name;
-    public List<Vector3> vertices = new List<Vector3>();
+    public List<Vertex> vertices = new List<Vertex>();
     public List<HalfEdge> edges = new List<HalfEdge>();
     public List<Face> faces = new List<Face>();
 
@@ -68,7 +68,39 @@ public class HalfEdgeMesh
 
     public bool hasUV() { return true; }
 
+    public void setTwinEdges()
+    {
+        List<HalfEdge> foundEdges = new List<HalfEdge>();
+        foreach (var edge in edges)
+        {
+            if (foundEdges.Contains(edge)) continue;
+            foreach (var twinEdge in edges)
+            {
+                if (Equals(twinEdge, edge))
+                {
+                    continue;
+                }
+                if (foundEdges.Contains(twinEdge))
+                {
+                    continue;
+                }
 
+                Vertex edgeSource = edge.source;
+                Vertex edgeNext = edge.nextEdge.source;
+                Vertex twinEdgeSource = twinEdge.source;
+                Vertex twinEdgeNext = twinEdge.nextEdge.source;
+
+
+                if (edgeSource.position == twinEdgeNext.position && edgeNext.position == twinEdgeSource.position)
+                {
+                    edge.twinEdge = twinEdge;
+                    twinEdge.twinEdge = edge;
+                    foundEdges.Add(twinEdge);
+                    foundEdges.Add(edge);
+                }
+            }
+        }
+    }
 }
 
 
