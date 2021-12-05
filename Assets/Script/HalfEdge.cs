@@ -68,7 +68,25 @@ public class HalfEdgeMesh
 
     public bool hasUV() { return true; }
 
-    public void setTwinEdges()
+    public void Add(HalfEdge h)
+    {
+        h.index = edges.Count;
+        edges.Add(h);
+    }
+
+    public void Add(Vertex v)
+    {
+        v.index = vertices.Count;
+        vertices.Add(v);
+    }
+    
+    public void Add(Face f)
+    {
+        f.index = faces.Count;
+        faces.Add(f);
+    }
+
+    public void SetTwinEdges()
     {
         List<HalfEdge> foundEdges = new List<HalfEdge>();
         foreach (var edge in edges)

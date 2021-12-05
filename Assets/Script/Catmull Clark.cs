@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System.Linq;
 public class CatmullClark : MonoBehaviour
 {
     // Start is called before the first frame update
@@ -57,7 +56,7 @@ public class CatmullClark : MonoBehaviour
          */
     }
 
-    public static void trianglesToQuads(Mesh mesh, out int[] quads)
+    public static void TrianglesToQuads(Mesh mesh, out int[] quads)
     {
         Vector3[] triVertices = mesh.vertices;
         int[] triIndices = mesh.triangles;
@@ -81,7 +80,7 @@ public class CatmullClark : MonoBehaviour
 
         int[] quads;
         Vector3[] vertices = mesh.vertices;
-        trianglesToQuads(mesh, out quads);
+        TrianglesToQuads(mesh, out quads);
 
         for(int i =0; i < vertices.Length; i++)
         {
@@ -102,7 +101,7 @@ public class CatmullClark : MonoBehaviour
             HalfEdge halfEdge3 = new HalfEdge(index + 2, vertex3);
             HalfEdge halfEdge4 = new HalfEdge(index + 3, vertex4);
 
-            Face face = new Face(index);
+            Face face = new Face(index/4);
             face.edge = halfEdge1;
             halfEdgeMesh.faces.Add(face);
 
@@ -129,10 +128,7 @@ public class CatmullClark : MonoBehaviour
             index += 4;
         }
 
-        halfEdgeMesh.setTwinEdges();
-
-        
-
+        halfEdgeMesh.SetTwinEdges();
         return halfEdgeMesh;
 
     }
@@ -146,10 +142,10 @@ public class CatmullClark : MonoBehaviour
 
         foreach( var face in halfEdgeMesh.faces)
         {
-            quads.Add(vertices.FindIndex(x => x == face.edge.source.position));
-            quads.Add(vertices.FindIndex(x => x == face.edge.nextEdge.source.position));
-            quads.Add(vertices.FindIndex(x => x == face.edge.nextEdge.nextEdge.source.position));
-            quads.Add(vertices.FindIndex(x => x == face.edge.nextEdge.nextEdge.nextEdge.source.position));
+            quads.Add(face.edge.source.index);
+            quads.Add(face.edge.nextEdge.source.index);
+            quads.Add(face.edge.nextEdge.nextEdge.source.index);
+            quads.Add(face.edge.nextEdge.nextEdge.nextEdge.source.index);
         }
 
         newMesh.vertices = vertices.ToArray();
@@ -160,7 +156,7 @@ public class CatmullClark : MonoBehaviour
         return newMesh;
     }
 
-    public static Vertex facePoint(Face f)
+    public static Vertex FacePoint(Face f)
     {
         Vertex vertice1 = f.edge.source;
         Vertex vertice2 = f.edge.nextEdge.source;
@@ -170,7 +166,7 @@ public class CatmullClark : MonoBehaviour
         return result;
     }
 
-    public static Vertex edgePoint(HalfEdge edge)
+    public static Vertex EdgePoint(HalfEdge edge)
     {
         Vertex vertice1 = edge.source;
         Vertex vertice2 = edge.nextEdge.source;
@@ -180,8 +176,8 @@ public class CatmullClark : MonoBehaviour
             Face face1 = edge.face;
             Face face2 = edge.twinEdge.face;            
 
-            Vertex vertice3 = facePoint(edge.face);
-            Vertex vertice4 = facePoint(edge.twinEdge.face);
+            Vertex vertice3 = FacePoint(edge.face);
+            Vertex vertice4 = FacePoint(edge.twinEdge.face);
             result = new Vertex((vertice1.position + vertice2.position + vertice3.position + vertice4.position) / 4);
         }
         else
@@ -191,12 +187,12 @@ public class CatmullClark : MonoBehaviour
         return result;
     }
 
-    public static Face[] getNeighboursFaces(Vertex v, HalfEdgeMesh halfEdgeMesh)
+    public static Face[] GetNeighboursFaces(Vertex v, HalfEdgeMesh halfEdgeMesh)
     {
         List<Face> faces = new List<Face>();
         foreach(var edges in halfEdgeMesh.edges)
         {
-            if(edges.source == v)
+            if(edges.source.position == v.position)
             {
                 faces.Add(edges.face);
             }
@@ -204,12 +200,12 @@ public class CatmullClark : MonoBehaviour
         return faces.ToArray();
     }
 
-    public static HalfEdge[] getNeighboursEdges(Vertex v, HalfEdgeMesh halfEdgeMesh)
+    public static HalfEdge[] GetNeighboursEdges(Vertex v, HalfEdgeMesh halfEdgeMesh)
     {
         List<HalfEdge> edges = new List<HalfEdge>();
         foreach(var edge in halfEdgeMesh.edges)
         {
-            if(edge.source == v)
+            if(edge.source.position == v.position)
             {
                 edges.Add(edge);
             }
@@ -217,116 +213,137 @@ public class CatmullClark : MonoBehaviour
         return edges.ToArray();
     }
 
-    public static void getNeighboursFacesEdges(Vertex v, HalfEdgeMesh halfEdgeMesh,out Face[] faces, out HalfEdge[] edges)
+    public static void GetNeighboursFacesEdges(Vertex v, HalfEdgeMesh halfEdgeMesh,out Face[] faces, out HalfEdge[] edges)
     {
-        faces = getNeighboursFaces(v, halfEdgeMesh);
-        edges = getNeighboursEdges(v, halfEdgeMesh);
+        faces = GetNeighboursFaces(v, halfEdgeMesh);
+        edges = GetNeighboursEdges(v, halfEdgeMesh);
     }
 
-    public static Vertex vertexPoint(Vertex v, HalfEdgeMesh halfEdgeMesh)
+    public static Vertex VertexPoint(Vertex v, HalfEdgeMesh halfEdgeMesh)
     {
         Face[] faces;
         HalfEdge[] edges;
 
-        getNeighboursFacesEdges(v, halfEdgeMesh,out faces, out edges);
+        GetNeighboursFacesEdges(v, halfEdgeMesh,out faces, out edges);
 
         int n = edges.Length;
-        if(n >= 4)
+        if(n >= 3)
         {
             Vector3 Q = new Vector3();
             Vector3 R = new Vector3();
             for (int i = 0; i < faces.Length; i++)
             {
-                Q += facePoint(faces[i]).position;
+                Q += FacePoint(faces[i]).position;
             }
             Q /= faces.Length;
 
             for (int i = 0; i < edges.Length; i++)
             {
-                R += edges[i].source.position + edges[i].nextEdge.source.position;
+                R += (edges[i].source.position + edges[i].nextEdge.source.position)/2;
             }
             R /= edges.Length;
             return new Vertex(Q / n + (2 * R) / n + ((n - 3) / n) * v.position, v.index);
         }
-        else
+        else //boundary
         {
             return v;
         }
     }
 
-    public static void splitEdge(HalfEdge e, Vertex v, HalfEdgeMesh halfEdgeMesh)
+    public static HalfEdge SplitEdge(HalfEdge e, Vertex v, HalfEdgeMesh halfEdgeMesh)
     {
         HalfEdge newHalfEdge = new HalfEdge(v, e.face);
         newHalfEdge.nextEdge = e.nextEdge;
         newHalfEdge.prevEdge = e;
         e.nextEdge = newHalfEdge;
-        halfEdgeMesh.edges.Add(newHalfEdge);
-        newHalfEdge.index = halfEdgeMesh.edges.Count+1;
-        v.index = halfEdgeMesh.vertices.Count+1;
-        halfEdgeMesh.vertices.Add(v);
+
+        halfEdgeMesh.Add(newHalfEdge);
+
+        return newHalfEdge;
     }
 
-    public static void setNextPrevEdge(HalfEdge startEdge, HalfEdge endEdge)
+    public static void SetNextPrevEdge(HalfEdge startEdge, HalfEdge endEdge)
     {
         if (startEdge == endEdge) return;
         startEdge.nextEdge = endEdge;
         endEdge.prevEdge = startEdge;
     }
 
-    public static void setNewEdgesFromSplitFace(Face f, Vertex v, HalfEdge startEdge, HalfEdgeMesh halfEdgeMesh)
+    //public static void SetNewEdgesFromSplitFace(Face f, Vertex v, HalfEdge startEdge, HalfEdgeMesh halfEdgeMesh)
+    //{
+    //    HalfEdge edge1 = new HalfEdge(startEdge.nextEdge.source, f);
+    //    HalfEdge edge2 = new HalfEdge(v, f);
+
+    //    SetNextPrevEdge(startEdge, edge1);
+    //    SetNextPrevEdge(edge1, edge2);
+    //    SetNextPrevEdge(edge2, startEdge.prevEdge);
+
+    //    halfEdgeMesh.edges.Add(edge1);
+    //    halfEdgeMesh.edges.Add(edge2);
+
+    //    edge1.index = halfEdgeMesh.edges.Count;
+    //    halfEdgeMesh.edges.Add(edge1);
+    //    edge2.index = halfEdgeMesh.edges.Count;
+    //    halfEdgeMesh.edges.Add(edge2);
+
+        
+
+    //    /*
+    //    edge1.nextEdge = edge2;
+    //    edge1.prevEdge = startEdge;
+    //    edge2.nextEdge = startEdge.prevEdge;
+    //    edge2.prevEdge = edge1;
+    //    startEdge.nextEdge = edge1;
+    //    startEdge.prevEdge.prevEdge = edge2;*/
+
+    //}
+
+    //public static void SplitFace(Face f1, Vertex v, HalfEdgeMesh halfEdgeMesh)
+    //{
+    //    Face f2 = new Face(halfEdgeMesh.faces.Count);
+    //    Face f3 = new Face(halfEdgeMesh.faces.Count + 1);
+    //    Face f4 = new Face(halfEdgeMesh.faces.Count + 2);
+
+    //    HalfEdge startEdge1 = f1.edge;
+    //    HalfEdge startEdge2 = f1.edge.nextEdge.nextEdge;
+    //    HalfEdge startEdge3 = startEdge2.nextEdge.nextEdge;
+    //    HalfEdge startEdge4 = startEdge3.nextEdge.nextEdge;
+
+    //    f2.edge = startEdge2;
+    //    f3.edge = startEdge3;
+    //    f4.edge = startEdge4;
+
+    //    v.index = halfEdgeMesh.vertices.Count;
+
+    //    SetNewEdgesFromSplitFace(f1, v, startEdge1, halfEdgeMesh);
+    //    SetNewEdgesFromSplitFace(f2, v, startEdge2, halfEdgeMesh);
+    //    SetNewEdgesFromSplitFace(f3, v, startEdge3, halfEdgeMesh);
+    //    SetNewEdgesFromSplitFace(f4, v, startEdge4, halfEdgeMesh);
+
+    //    halfEdgeMesh.faces.Add(f2);
+    //    halfEdgeMesh.faces.Add(f3);
+    //    halfEdgeMesh.faces.Add(f4);
+    //}
+
+    public static void ConnectEdgesToFacePoint(HalfEdge startEdge, Face face, Vertex facePoint, int index, HalfEdgeMesh halfEdgeMesh)
     {
-        HalfEdge edge1 = new HalfEdge(startEdge.nextEdge.source, f);
-        HalfEdge edge2 = new HalfEdge(v, f);
+        if (index < 0 || index >= 4) return;
 
-        setNextPrevEdge(startEdge, edge1);
-        setNextPrevEdge(edge1, edge2);
-        setNextPrevEdge(edge2, startEdge.prevEdge);
+        HalfEdge[] halfEdges = new HalfEdge[4];
 
-        halfEdgeMesh.edges.Add(edge1);
-        halfEdgeMesh.edges.Add(edge2);
+        halfEdges[index] = startEdge;
+        halfEdges[(index + 1) % 4] = new HalfEdge(startEdge.nextEdge.source, face);
+        halfEdges[(index + 2) % 4] = new HalfEdge(facePoint, face);
+        halfEdges[(index + 3) % 4] = startEdge.prevEdge;
 
-        edge1.index = halfEdgeMesh.edges.Count+1;
-        edge2.index = halfEdgeMesh.edges.Count+1;
+        face.edge = halfEdges[0];
 
-        halfEdgeMesh.edges.Add(edge1);
-        halfEdgeMesh.edges.Add(edge2);
+        SetNextPrevEdge(halfEdges[index], halfEdges[(index + 1) % 4]);
+        SetNextPrevEdge(halfEdges[(index + 1) % 4], halfEdges[(index + 2) % 4]);
+        SetNextPrevEdge(halfEdges[(index + 2) % 4], startEdge.prevEdge);
 
-        /*
-        edge1.nextEdge = edge2;
-        edge1.prevEdge = startEdge;
-        edge2.nextEdge = startEdge.prevEdge;
-        edge2.prevEdge = edge1;
-        startEdge.nextEdge = edge1;
-        startEdge.prevEdge.prevEdge = edge2;*/
-
-    }
-
-    public static void splitFace(Face f1, Vertex v, HalfEdgeMesh halfEdgeMesh)
-    {
-        Face f2 = new Face(halfEdgeMesh.faces.Count + 1);
-        Face f3 = new Face(halfEdgeMesh.faces.Count + 2);
-        Face f4 = new Face(halfEdgeMesh.faces.Count + 3);
-
-        HalfEdge startEdge1 = f1.edge;
-        HalfEdge startEdge2 = f1.edge.nextEdge.nextEdge;
-        HalfEdge startEdge3 = startEdge2.nextEdge.nextEdge;
-        HalfEdge startEdge4 = startEdge3.nextEdge.nextEdge;
-
-        f2.edge = startEdge2;
-        f3.edge = startEdge3;
-        f4.edge = startEdge4;
-
-        v.index = halfEdgeMesh.vertices.Count+1;
-        halfEdgeMesh.vertices.Add(v);
-
-        setNewEdgesFromSplitFace(f1, v, startEdge1, halfEdgeMesh);
-        setNewEdgesFromSplitFace(f2, v, startEdge2, halfEdgeMesh);
-        setNewEdgesFromSplitFace(f3, v, startEdge3, halfEdgeMesh);
-        setNewEdgesFromSplitFace(f4, v, startEdge4, halfEdgeMesh);
-
-        halfEdgeMesh.faces.Add(f2);
-        halfEdgeMesh.faces.Add(f3);
-        halfEdgeMesh.faces.Add(f4);
+        halfEdgeMesh.Add(halfEdges[(index + 1) % 4]);
+        halfEdgeMesh.Add(halfEdges[(index + 2) % 4]);
     }
 
     public static Mesh Catmull_Clark(Mesh mesh)
@@ -348,18 +365,85 @@ public class CatmullClark : MonoBehaviour
 
         foreach(Face face in faces)
         {
-            facePoints.Add(facePoint(face));
+            Vertex facePoint = FacePoint(face);
+            halfEdgeMesh.Add(facePoint);
+            facePoints.Add(facePoint);
         }
 
         foreach(HalfEdge halfEdge in halfEdges)
         {
-            edgePoints.Add(edgePoint(halfEdge));
+            Vertex edgePoint = EdgePoint(halfEdge);
+            halfEdgeMesh.Add(edgePoint);
+            edgePoints.Add(edgePoint);
         }
 
         for(int i=0; i< vertices.Count; i++)
         {
-            vertices[i] = vertexPoint(vertices[i], halfEdgeMesh);
+            vertices[i] = VertexPoint(vertices[i], halfEdgeMesh);
         }
+
+        int faceCount = faces.Count;
+        Dictionary<Face, Face[]> subFace = new Dictionary<Face, Face[]>();
+        for(int i=0; i< faceCount; i++)
+        {
+            HalfEdge halfEdge1 = faces[i].edge;
+            HalfEdge halfEdge2 = faces[i].edge.nextEdge;
+            HalfEdge halfEdge3 = faces[i].edge.nextEdge.nextEdge;
+            HalfEdge halfEdge4 = faces[i].edge.nextEdge.nextEdge.nextEdge;
+
+            Face f1 = faces[i];
+            Face f2 = new Face(halfEdgeMesh.faces.Count);
+            Face f3 = new Face(halfEdgeMesh.faces.Count + 1);
+            Face f4 = new Face(halfEdgeMesh.faces.Count + 2);
+
+            halfEdgeMesh.Add(f2);
+            halfEdgeMesh.Add(f3);
+            halfEdgeMesh.Add(f4);
+
+            HalfEdge halfEdgeFace2 = SplitEdge(halfEdge1, edgePoints[halfEdge1.index], halfEdgeMesh);
+            HalfEdge halfEdgeFace3 = SplitEdge(halfEdge2, edgePoints[halfEdge2.index], halfEdgeMesh);
+            HalfEdge halfEdgeFace4 = SplitEdge(halfEdge3, edgePoints[halfEdge3.index], halfEdgeMesh);
+            HalfEdge halfEdgeFace1 = SplitEdge(halfEdge4, edgePoints[halfEdge4.index], halfEdgeMesh);            
+
+            halfEdge1.prevEdge = halfEdgeFace1;
+            halfEdge2.prevEdge = halfEdgeFace2;
+            halfEdge3.prevEdge = halfEdgeFace3;
+            halfEdge4.prevEdge = halfEdgeFace4;
+
+            halfEdgeFace1.face = f1;
+            halfEdgeFace2.face = f2;
+            halfEdgeFace3.face = f3;
+            halfEdgeFace4.face = f4;
+
+            halfEdge2.face = f2;
+            halfEdge3.face = f3;
+            halfEdge4.face = f4;
+
+            Vertex facePoint = facePoints[faces[i].index];
+
+            ConnectEdgesToFacePoint(halfEdge1, f1, facePoint, 0, halfEdgeMesh);
+            ConnectEdgesToFacePoint(halfEdge2, f2, facePoint, 1, halfEdgeMesh);
+            ConnectEdgesToFacePoint(halfEdge3, f3, facePoint, 2, halfEdgeMesh);
+            ConnectEdgesToFacePoint(halfEdge4, f4, facePoint, 3, halfEdgeMesh);
+
+
+            ///
+
+
+            //HalfEdge subHalfEdge2 = new HalfEdge(halfEdge1.nextEdge.source, f1);
+            //HalfEdge subHalfEdge3 = new HalfEdge(facePoints[faces[i].index], f1);
+            //setNextPrevEdge(halfEdge1, subHalfEdge2);
+            //setNextPrevEdge(subHalfEdge2, subHalfEdge3);
+            //setNextPrevEdge(subHalfEdge3, halfEdge1.prevEdge);
+
+
+            subFace[f1] = new Face[] { f1, f2, f3, f4 };
+
+            //splitEdge(halfEdge1, )
+
+        }
+        halfEdgeMesh.SetTwinEdges();
+        /*
         int halfEdgesCount = halfEdges.Count;
         for(int i=0; i< halfEdgesCount; i++)
         {
@@ -372,6 +456,6 @@ public class CatmullClark : MonoBehaviour
             splitFace(faces[i], facePoints[i], halfEdgeMesh); //count
         }
 
-        halfEdgeMesh.setTwinEdges();
+        halfEdgeMesh.setTwinEdges();*/
     }
 }
