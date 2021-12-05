@@ -158,31 +158,32 @@ public class CatmullClark : MonoBehaviour
 
     public static Vertex FacePoint(Face f)
     {
-        Vertex vertice1 = f.edge.source;
-        Vertex vertice2 = f.edge.nextEdge.source;
-        Vertex vertice3 = f.edge.nextEdge.nextEdge.source;
-        Vertex vertice4 = f.edge.nextEdge.nextEdge.nextEdge.source;
-        Vertex result = new Vertex((vertice1.position + vertice2.position + vertice3.position + vertice4.position) / 4);
-        return result;
+        Vector3 vertex1 = f.edge.source.position;
+        Vector3 vertex2 = f.edge.nextEdge.source.position;
+        Vector3 vertex3 = f.edge.nextEdge.nextEdge.source.position;   
+        Vector3 vertex4 = f.edge.nextEdge.nextEdge.nextEdge.source.position;
+        Vector3 result = (vertex1 + vertex2 + vertex3 + vertex4);
+        result /= 4;
+        return new Vertex(result);
     }
 
     public static Vertex EdgePoint(HalfEdge edge)
     {
-        Vertex vertice1 = edge.source;
-        Vertex vertice2 = edge.nextEdge.source;
+        Vertex vertex1 = edge.source;
+        Vertex vertex2 = edge.nextEdge.source;
         Vertex result;
         if (edge.twinEdge != null)
         {
             Face face1 = edge.face;
             Face face2 = edge.twinEdge.face;            
 
-            Vertex vertice3 = FacePoint(edge.face);
-            Vertex vertice4 = FacePoint(edge.twinEdge.face);
-            result = new Vertex((vertice1.position + vertice2.position + vertice3.position + vertice4.position) / 4);
+            Vertex vertex3 = FacePoint(edge.face);
+            Vertex vertex4 = FacePoint(edge.twinEdge.face);
+            result = new Vertex((vertex1.position + vertex2.position + vertex3.position + vertex4.position) / 4);
         }
         else
         {
-            result = new Vertex((vertice1.position + vertice2.position) / 2);
+            result = new Vertex((vertex1.position + vertex2.position) / 2);
         }
         return result;
     }
@@ -242,7 +243,7 @@ public class CatmullClark : MonoBehaviour
                 R += (edges[i].source.position + edges[i].nextEdge.source.position)/2;
             }
             R /= edges.Length;
-            return new Vertex(Q / n + (2 * R) / n + ((n - 3) / n) * v.position, v.index);
+            return new Vertex( Q / n + 2 * R / n + (n - 3) * v.position / n , v.index);
         }
         else //boundary
         {
@@ -363,7 +364,12 @@ public class CatmullClark : MonoBehaviour
         List<Vertex> facePoints = new List<Vertex>();
         List<Vertex> edgePoints = new List<Vertex>();
 
-        foreach(Face face in faces)
+        for (int i = 0; i < vertices.Count; i++)
+        {
+            vertices[i] = VertexPoint(vertices[i], halfEdgeMesh);
+        }
+
+        foreach (Face face in faces)
         {
             Vertex facePoint = FacePoint(face);
             halfEdgeMesh.Add(facePoint);
@@ -377,10 +383,7 @@ public class CatmullClark : MonoBehaviour
             edgePoints.Add(edgePoint);
         }
 
-        for(int i=0; i< vertices.Count; i++)
-        {
-            vertices[i] = VertexPoint(vertices[i], halfEdgeMesh);
-        }
+        
 
         int faceCount = faces.Count;
         Dictionary<Face, Face[]> subFace = new Dictionary<Face, Face[]>();

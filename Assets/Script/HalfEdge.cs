@@ -103,13 +103,13 @@ public class HalfEdgeMesh
                     continue;
                 }
 
-                Vertex edgeSource = edge.source;
-                Vertex edgeNext = edge.nextEdge.source;
-                Vertex twinEdgeSource = twinEdge.source;
-                Vertex twinEdgeNext = twinEdge.nextEdge.source;
+                Vector3 edgeSource = edge.source.position;
+                Vector3 edgeNext = edge.nextEdge.source.position;
+                Vector3 twinEdgeSource = twinEdge.source.position;
+                Vector3 twinEdgeNext = twinEdge.nextEdge.source.position;
 
 
-                if (edgeSource.position == twinEdgeNext.position && edgeNext.position == twinEdgeSource.position)
+                if (edgeSource == twinEdgeNext && edgeNext == twinEdgeSource)
                 {
                     edge.twinEdge = twinEdge;
                     twinEdge.twinEdge = edge;
