@@ -10,7 +10,7 @@ public class MeshGenerator2 : MonoBehaviour
     {
         m_Mf = GetComponent<MeshFilter>();
         //m_Mf.sharedMesh = CreateTriangle();
-        //m_Mf.sharedMesh = CreateQuadXZ(new Vector3(4,0,2));
+        //Mesh mesh = CreateQuadXZ(new Vector3(4,0,2));
         //m_Mf.sharedMesh = CreateStripXZ(new Vector3(4, 0, 2),200);
 
         //m_Mf.sharedMesh = CreatePlaneXZ(new Vector3(4, 0, 2), 20,10);
@@ -52,11 +52,11 @@ public class MeshGenerator2 : MonoBehaviour
         });
         //m_Mf.sharedMesh = CreateStripXZQuads(new Vector3(4, 0, 2), 5);
         //Mesh mesh = CreateRegularPolygonXZQuads(100, 4);
-        Debug.Log(MeshDisplayInfo2.ExportMeshCSV(mesh));
-        Mesh catmull_Mesh = CatmullClark.Catmull_Clark(mesh);
-        Debug.Log(MeshDisplayInfo2.ExportMeshCSV(catmull_Mesh));
+        //Debug.Log(MeshDisplayInfo2.ExportMeshCSV(mesh));
+        //Mesh catmull_Mesh = CatmullClark.Catmull_Clark(mesh);
+        //Debug.Log(MeshDisplayInfo2.ExportMeshCSV(catmull_Mesh));
 
-        m_Mf.sharedMesh = catmull_Mesh;
+        m_Mf.sharedMesh = mesh;
         gameObject.AddComponent<MeshCollider>();
     }
     #region Triangles
