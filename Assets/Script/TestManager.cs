@@ -6,31 +6,52 @@ using static GeometricClass;
 using static GeometricServices;
 public class TestManager : MonoBehaviour
 {
-    MeshFilter m_Mf;
-    [Header("Parameters")]
+    [Header("Objects")]    
     [SerializeField] GameObject Plane;
     [SerializeField] GameObject Sphere;
     [SerializeField] GameObject Cylinder;
     [SerializeField] GameObject PointA;
     [SerializeField] GameObject PointB;
-    [SerializeField] float pointSize;
+
+    [Header("Points (A,B)")]
+    [SerializeField] float Size_Point_AB;
+    [SerializeField] Color Color_PointA;
+    [SerializeField] Color Color_PointB;
+    [SerializeField] Color Color_Segment_AB;
+
+    [Header("Normals")]
+    [SerializeField] float Size_normals;
+    [SerializeField] Color Color_Normals;
+
+    [Header("Intersections")]
+    [SerializeField] float Size_Intersect_Points;
+    [SerializeField] Color Color_Intersect_Sphere;
+    [SerializeField] Color Color_Intersect_Cylinder;
+    [SerializeField] Color Color_Intersect_Plane;    
+    
     void OnDrawGizmos()
     {
         #region Segment
         {
             GUIStyle myStyle = new GUIStyle();
             myStyle.fontSize = 16;
-            myStyle.normal.textColor = Color.red;
 
-            Gizmos.color = Color.red;
             Vector3 posA = PointA.transform.position;
             Vector3 posB = PointB.transform.position;
 
-            Gizmos.DrawSphere(posA, pointSize);
+            Gizmos.color = Color_PointA;
+            myStyle.normal.textColor = Color_PointA;
+            Gizmos.DrawSphere(posA, Size_Point_AB);
             Handles.Label(posA, "A", myStyle);
-            Gizmos.DrawSphere(posB, pointSize);
+
+            Gizmos.color = Color_PointB;
+            myStyle.normal.textColor = Color_PointB;
+            Gizmos.DrawSphere(posB, Size_Point_AB);
             Handles.Label(posB, "B", myStyle);
+
+            Gizmos.color = Color_Segment_AB;
             Gizmos.DrawLine(posA, posB);
+            
         }
         #endregion
 
@@ -43,10 +64,10 @@ public class TestManager : MonoBehaviour
             GeometricClass.Plane plane = new GeometricClass.Plane { Normal = norm, d = Plane.transform.position.y };
             if (InterSegmentPlane(segment, plane, out interpt, out interNormal))
             {
-                Gizmos.color = Color.blue;
-                Gizmos.DrawSphere(interpt, pointSize);
-                Gizmos.color = Color.white;
-                Gizmos.DrawLine(interpt, interpt + interNormal * 10);
+                Gizmos.color = Color_Intersect_Plane;
+                Gizmos.DrawSphere(interpt, Size_Intersect_Points);
+                Gizmos.color = Color_Normals;
+                Gizmos.DrawLine(interpt, interpt + interNormal * Size_normals);
             }
         }
         #endregion
@@ -59,14 +80,11 @@ public class TestManager : MonoBehaviour
             GeometricClass.Cylinder cylinder = new GeometricClass.Cylinder { pt1= Cylinder.transform.position, pt2 = Cylinder.transform.position + Cylinder.transform.up, radius = Cylinder.transform.localScale.x/2};
             if (InterSegmentCylinder(segment, cylinder, out interpt, out interNormal))
             {
-                Gizmos.color = Color.cyan;
-                Gizmos.DrawSphere(interpt, pointSize);
-                Gizmos.color = Color.white;
-                Gizmos.DrawLine(interpt, interpt + interNormal * 10);
+                Gizmos.color = Color_Intersect_Cylinder;
+                Gizmos.DrawSphere(interpt, Size_Intersect_Points);
+                Gizmos.color = Color_Normals;                 
+                Gizmos.DrawLine(interpt, interpt + interNormal * Size_normals);
             }
-
-            Vector3 interpt2;
-            //InterSegmentCylinder2(segment, cylinder, out interpt, out interpt2, out interNormal);
         }
         #endregion
 
@@ -78,10 +96,10 @@ public class TestManager : MonoBehaviour
             GeometricClass.Sphere sphere = new GeometricClass.Sphere { center = Sphere.transform.position, radius = Sphere.transform.localScale.x/2 };
             if (InterSegmentSphere(segment, sphere, out interpt, out interNormal))
             {
-                Gizmos.color = Color.magenta;
-                Gizmos.DrawSphere(interpt, pointSize);
-                Gizmos.color = Color.white;
-                Gizmos.DrawLine(interpt, interpt + interNormal * 10);
+                Gizmos.color = Color_Intersect_Sphere;
+                Gizmos.DrawSphere(interpt, Size_Intersect_Points);
+                Gizmos.color = Color_Normals;                
+                Gizmos.DrawLine(interpt, interpt + interNormal * Size_normals);
             }
         }
         #endregion

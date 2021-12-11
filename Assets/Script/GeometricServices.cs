@@ -145,71 +145,21 @@ public static class GeometricServices
 		{
 			interpt = segment.pt1 + x1 * AB;
 			Debug.Log("inter " + interpt);
-			//interNormal = (interpt - cylinder.center);
-			//interNormal.Normalize();
+			Vector3 H = cylinder.pt1 + Vector3.Dot(interpt - cylinder.pt1, u) * u;
+			interNormal = interpt - H;
+			interNormal.Normalize();
 			return true;
 		}
 		if (isValid(x2))
 		{
 			interpt = segment.pt1 + x2 * AB;
 			Debug.Log("inter " + interpt);
-			//interNormal = -(interpt - cylinder.center);
-			//interNormal.Normalize();
+			Vector3 H = cylinder.pt1 + Vector3.Dot(interpt - cylinder.pt1, u) * u;
+			interNormal = - (interpt - H);
+			interNormal.Normalize();
 			return true;
 		}
 
 		return false;
 	}
-
-
-    /////a tester
-    //public static bool InterSegmentCylinder2(Segment segment, Cylinder cylinder, out Vector3 interPt1, out Vector3 interPt2, out Vector3 interNormal)
-    //{
-    //    interPt1 = new Vector3();
-    //    interPt2 = new Vector3();
-    //    interNormal = new Vector3();
-
-    //    Vector3 u = (cylinder.pt2 - cylinder.pt1) / Vector3.Magnitude(cylinder.pt2 - cylinder.pt1);
-    //    Vector3 AB = segment.pt2 - segment.pt1;
-    //    Vector3 PA = segment.pt1 - cylinder.pt1;
-
-    //    float a = AB.magnitude * AB.magnitude - (1 - 2 * Vector3.Dot(u, u) + Vector3.Dot(u, u) * Vector3.Dot(u, u));
-    //    float b = Vector3.Dot(AB, PA) * (1 - 4 * Vector3.Dot(u, u) + 3 * Vector3.Dot(u, u) * Vector3.Dot(u, u));
-    //    float c = Vector3.Dot(PA, PA) - (1 - 2 * Vector3.Dot(u, u) + Vector3.Dot(u, u) * Vector3.Dot(u, u)) - cylinder.radius * cylinder.radius;
-    //    Debug.Log(Vector3.Dot(AB, PA));
-    //    Debug.Log("a2" + a);
-    //    Debug.Log("b2" + b);
-    //    Debug.Log("c2" + c);
-
-
-    //    float Delt = (b * b) - 4 * a * c;
-
-    //    float racine1;
-    //    float racine2;
-
-    //    if (Delt < 0)
-    //    {
-    //        return false;
-    //    }
-    //    else
-    //    {
-    //        racine1 = (-b - Mathf.Sqrt(Delt)) / 2 * a;
-    //        racine2 = (-b + Mathf.Sqrt(Delt)) / 2 * a;
-    //    }
-
-    //    float t1 = racine1;
-    //    float t2 = racine2;
-    //    Debug.Log(t1);
-    //    Debug.Log(t2);
-    //    if (!(t1 < 0 || t1 > 1))
-    //    {
-    //        Debug.Log(t1);
-    //        Debug.Log(t2);
-    //    }
-
-    //    interPt1 = segment.pt1 + t1 * AB;
-    //    interPt2 = segment.pt1 + t2 * AB;
-
-    //    return true;
-    //}
 }
