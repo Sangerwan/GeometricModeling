@@ -87,6 +87,7 @@ public class CatmullClark : MonoBehaviour
             halfEdgeMesh.vertices.Add(new Vertex(vertices[i],i));
         }
 
+        //store neighbours faces 
         Dictionary<Vector3, List<Face>> neighboursFaces = new Dictionary<Vector3, List<Face>>();
 
         int index = 0;
@@ -145,8 +146,8 @@ public class CatmullClark : MonoBehaviour
 
             index += 4;
         }
-
-        halfEdgeMesh.SetTwinEdges(neighboursFaces);
+        halfEdgeMesh.neighboursFaces = neighboursFaces;
+        halfEdgeMesh.SetTwinEdges();
         return halfEdgeMesh;
 
     }

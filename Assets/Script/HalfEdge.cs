@@ -63,7 +63,7 @@ public class HalfEdgeMesh
     public List<Vertex> vertices = new List<Vertex>();
     public List<HalfEdge> edges = new List<HalfEdge>();
     public List<Face> faces = new List<Face>();
-    public Dictionary<Vector3, List<Face>> neighboursFaces;
+    public Dictionary<Vector3, List<Face>> neighboursFaces = new Dictionary<Vector3, List<Face>>();
     public bool hasNormal() { return true; }
 
     public bool hasUV() { return true; }
@@ -86,9 +86,8 @@ public class HalfEdgeMesh
         faces.Add(f);
     }
 
-    public void SetTwinEdges(Dictionary<Vector3, List<Face>> neighboursFaces)
+    public void SetTwinEdges()
     {
-        this.neighboursFaces = neighboursFaces;
         List<HalfEdge> foundEdges = new List<HalfEdge>();
         foreach (var edge in edges)
         {

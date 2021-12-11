@@ -1,71 +1,73 @@
 using UnityEngine;
-
 [RequireComponent(typeof(MeshFilter))]
 public class MeshGenerator : MonoBehaviour
 {
-    void explication()
-    {
+    delegate Vector3 ComputePositionFromKxKz(float kX, float kZ);
 
-
-        // Start is called before the first frame update
-        // genération auto face
-        //nécessite 3 vertices qui forme les edges
-        /* VERTEX-VERTEX
-         * on donne les coordonnées des 3 points p1,p2,p3
-         * et l'ordre des vertex avec les 3 points p1,p3,p2
-         * 
-         * VERTEX-FACE (unity)
-         * Tableau de vertices (Vector3[]) taille N
-         * Tableau de triangles (int[]) taille N*3
-         *      On y donne les indices des points (dans le tableau de vertices) 
-         *      Les trois premiers int correspondent aux indices des trois points de la première face/triangle
-         *          *     
-         *  Pour chaque triangle on peut commencer par n'importe quel points tant qu'on tourne dans le sens horaire 
-         * */
-    }
-    delegate Vector3 ComputeVector3FromKxKz(float kX, float Kz);
     MeshFilter m_Mf;
 
     private void Awake()
     {
         m_Mf = GetComponent<MeshFilter>();
         //m_Mf.sharedMesh = CreateTriangle();
-        //m_Mf.sharedMesh = CreatePlane(new Vector3(4,0,6),8,8);
-        
-        m_Mf.sharedMesh = WrapNormalizeCreatePlane(5, 5,
-            (kX, kZ) => new Vector3((kX - .5f) * 4.0f, 0, (kZ - .5f) * 2)
-            /*
-            (kX, kZ) =>
-            {
-                float theta = kX * 2 * Mathf.PI;
-                float z = kZ * 4;
-                float rho = 2;
-                return new Vector3(rho * Mathf.Cos(theta), z, rho * Mathf.Sin(theta));
-            }
-            */
-            /*
-            (kX, kZ) =>
-            {
-                float theta = kX * 2 * Mathf.PI;
-                float phi = (1-kZ) * Mathf.PI;
-                float rho = 2;
-                return new Vector3(rho * Mathf.Cos(theta) * Mathf.Sin(phi), rho * Mathf.Cos(phi), rho * Mathf.Sin(theta) * Mathf.Sin(phi));
-            }*/
+        //Mesh mesh = CreateQuadXZ(new Vector3(4,0,2));
+        //m_Mf.sharedMesh = CreateStripXZ(new Vector3(4, 0, 2),200);
 
-         );
-         Debug.Log(MeshDisplayInfo.ExportMeshCSV(m_Mf.sharedMesh));
-        // m_Mf.sharedMesh = WrapNormalizeCreatePlane(5, 5, (kX, kZ) => { return new Vector3(0, 0, 0); });
+        //m_Mf.sharedMesh = CreatePlaneXZ(new Vector3(4, 0, 2), 20,10);
+        //m_Mf.sharedMesh = CreateQuadXZ(new Vector3(4, 0, 2));
+        //m_Mf.sharedMesh = WrapNormalizePlane( 20, 10, (kX,kZ)=>new Vector3((kX-0.5f)*4,0,(kZ-0.5f)*2) );
+        /*
+        m_Mf.sharedMesh = WrapNormalizePlane(20, 100,
+        (kX, kZ) =>{
+        float rho = 2*(1+.25f*Mathf.Sin(kZ*Mathf.PI*2*4));
+        float theta = kX * 2 * Mathf.PI;
+        float y = kZ * 4;
+        return new Vector3(rho*Mathf.Cos(theta),y, rho * Mathf.Sin(theta));
+        }
+        );*/
+
+
+        //m_Mf.sharedMesh = 
+        //    WrapNormalizePlane(200, 100,
+        //        (kX, kZ) =>
+        //        {
+        //            float rho = 2 * (1 + .25f * Mathf.Sin(kZ * Mathf.PI * 2 * 4));
+        //            float theta = kX * 2 * Mathf.PI;
+        //            float phi = (1 - kZ) * Mathf.PI;
+        //            return rho * new Vector3(Mathf.Cos(theta) * Mathf.Sin(phi), Mathf.Cos(phi), Mathf.Sin(theta) * Mathf.Sin(phi));
+        //        }
+        //    );
+
+
+
+        //m_Mf.sharedMesh = WrapNormalizePlaneQuads(20, 10, (kX, kZ) => new Vector3( (kX - 0.5f) * 4, Mathf.Sin(kX * Mathf.PI * 2 * 3), (kZ - .5f) * 2));
+        Mesh mesh = WrapNormalizePlaneQuads(20, 10, (kX, kZ) =>
+        {
+            float rho = 2;
+            float theta = kX * 2 * Mathf.PI;
+            float phi = (1 - kZ) * Mathf.PI;
+            return new Vector3(rho * Mathf.Cos(theta), rho * Mathf.Cos(phi), rho * Mathf.Sin(theta) * Mathf.Sin(phi));
+            //return new Vector3(rho * Mathf.Sin(theta) * Mathf.Sin(phi), rho * Mathf.Cos(phi), rho * Mathf.Cos(theta));
+            //return new Vector3(rho * Mathf.Cos(theta), rho * Mathf.Cos(phi), rho * Mathf.Sin(theta) * Mathf.Sin(phi));
+        });
+        //m_Mf.sharedMesh = CreateStripXZQuads(new Vector3(4, 0, 2), 5);
+        //Mesh mesh = CreateRegularPolygonXZQuads(100, 4);
+        //Debug.Log(MeshDisplayInfo2.ExportMeshCSV(mesh));
+        //Mesh catmull_Mesh = CatmullClark.Catmull_Clark(mesh);
+        //Debug.Log(MeshDisplayInfo2.ExportMeshCSV(catmull_Mesh));
+
+        m_Mf.sharedMesh = mesh;
         gameObject.AddComponent<MeshCollider>();
-
     }
-
+    #region Triangles
     Mesh CreateTriangle()
     {
-
         Mesh newMesh = new Mesh();
         newMesh.name = "triangle";
+
         Vector3[] vertices = new Vector3[3];
         int[] triangles = new int[1 * 3];
+
         vertices[0] = Vector3.right;
         vertices[1] = Vector3.up;
         vertices[2] = Vector3.forward;
@@ -76,13 +78,141 @@ public class MeshGenerator : MonoBehaviour
 
         newMesh.vertices = vertices;
         newMesh.triangles = triangles;
-        // on recalcule la bounding box du mesh 
-        // C'est pour agir sur la boite englobante de l'objet 3D, pour le calcul de visibilité de la caméra
         newMesh.RecalculateBounds();
-
-
         return newMesh;
     }
+
+    Mesh CreateStripXZ(Vector3 size, int nSegments)
+    {
+        Vector3 halfSize = size * .5f;
+
+        Mesh newMesh = new Mesh();
+        newMesh.name = "strip";
+
+        Vector3[] vertices = new Vector3[(nSegments + 1) * 2];
+        int[] triangles = new int[nSegments * 2 * 3];
+
+        //Vertices
+        for (int i = 0; i < nSegments + 1; i++)
+        {
+            float k = (float)i / nSegments;
+            float y = .25f * Mathf.Sin(k * Mathf.PI * 2 * 3);
+            vertices[i] = new Vector3(Mathf.Lerp(-halfSize.x, halfSize.x, k), y, -halfSize.z);
+            vertices[nSegments + 1 + i] = new Vector3(Mathf.Lerp(-halfSize.x, halfSize.x, k), y, halfSize.z);
+        }
+
+        //Triangles
+        int index = 0;
+        for (int i = 0; i < nSegments; i++)
+        {
+            triangles[index++] = i;
+            triangles[index++] = i + nSegments + 1;
+            triangles[index++] = i + nSegments + 2;
+
+            triangles[index++] = i;
+            triangles[index++] = i + nSegments + 2;
+            triangles[index++] = i + 1;
+        }
+
+        newMesh.vertices = vertices;
+        newMesh.triangles = triangles;
+        newMesh.RecalculateBounds();
+        return newMesh;
+    }
+
+    Mesh CreatePlaneXZ(Vector3 size, int nSegmentsX, int nSegmentsZ)
+    {
+        Vector3 halfSize = size * .5f;
+
+        Mesh newMesh = new Mesh();
+        newMesh.name = "plane";
+
+        Vector3[] vertices = new Vector3[(nSegmentsX + 1) * (nSegmentsZ + 1)];
+        int[] triangles = new int[nSegmentsX * nSegmentsZ * 2 * 3];
+
+        //Vertices
+        int index = 0;
+        for (int i = 0; i < nSegmentsX + 1; i++)
+        {
+            float kX = (float)i / nSegmentsX;
+            float x = Mathf.Lerp(-halfSize.x, halfSize.x, kX);
+            for (int j = 0; j < nSegmentsZ + 1; j++)
+            {
+                float kZ = (float)j / nSegmentsZ;
+                vertices[index++] = new Vector3(x, 0, Mathf.Lerp(-halfSize.z, halfSize.z, kZ));
+            }
+        }
+
+        //Triangles
+        index = 0;
+        //double boucle également
+        for (int i = 0; i < nSegmentsX; i++)
+        {
+            for (int j = 0; j < nSegmentsZ; j++)
+            {
+                triangles[index++] = i * (nSegmentsZ + 1) + j;
+                triangles[index++] = i * (nSegmentsZ + 1) + j + 1;
+                triangles[index++] = (i + 1) * (nSegmentsZ + 1) + j + 1;
+
+                triangles[index++] = i * (nSegmentsZ + 1) + j;
+                triangles[index++] = (i + 1) * (nSegmentsZ + 1) + j + 1;
+                triangles[index++] = (i + 1) * (nSegmentsZ + 1) + j;
+            }
+        }
+
+        newMesh.vertices = vertices;
+        newMesh.triangles = triangles;
+        newMesh.RecalculateBounds();
+        newMesh.RecalculateNormals();
+        return newMesh;
+    }
+
+    Mesh WrapNormalizePlane(int nSegmentsX, int nSegmentsZ, ComputePositionFromKxKz computePosition)
+    {
+        Mesh newMesh = new Mesh();
+        newMesh.name = "plane";
+        Vector3[] vertices = new Vector3[(nSegmentsX + 1) * (nSegmentsZ + 1)];
+        int[] triangles = new int[nSegmentsX * nSegmentsZ * 2 * 3];
+        //Vertices
+        int index = 0;
+        for (int i = 0; i < nSegmentsX + 1; i++)
+        {
+            float kX = (float)i / nSegmentsX;
+            for (int j = 0; j < nSegmentsZ + 1; j++)
+            {
+                float kZ = (float)j / nSegmentsZ;
+                vertices[index++] = computePosition(kX, kZ);
+            }
+        }
+
+        //Triangles
+        index = 0;
+        //double boucle également
+        for (int i = 0; i < nSegmentsX; i++)
+        {
+            for (int j = 0; j < nSegmentsZ; j++)
+            {
+                triangles[index++] = i * (nSegmentsZ + 1) + j;
+                triangles[index++] = i * (nSegmentsZ + 1) + j + 1;
+                triangles[index++] = (i + 1) * (nSegmentsZ + 1) + j + 1;
+
+                triangles[index++] = i * (nSegmentsZ + 1) + j;
+                triangles[index++] = (i + 1) * (nSegmentsZ + 1) + j + 1;
+                triangles[index++] = (i + 1) * (nSegmentsZ + 1) + j;
+
+
+            }
+        }
+
+        newMesh.vertices = vertices;
+        newMesh.triangles = triangles;
+        newMesh.RecalculateBounds();
+        newMesh.RecalculateNormals();
+        return newMesh;
+    }
+    #endregion
+
+    #region Quad
 
     Mesh CreateQuadXZ(Vector3 size)
     {
@@ -94,7 +224,7 @@ public class MeshGenerator : MonoBehaviour
         Vector3[] vertices = new Vector3[4];
         int[] triangles = new int[2 * 3];
 
-        vertices[0] = new Vector3(-halfSize.x,0,-halfSize.z);
+        vertices[0] = new Vector3(-halfSize.x, 0, -halfSize.z);
         vertices[1] = new Vector3(-halfSize.x, 0, halfSize.z);
         vertices[2] = new Vector3(halfSize.x, 0, halfSize.z);
         vertices[3] = new Vector3(halfSize.x, 0, -halfSize.z);
@@ -109,257 +239,139 @@ public class MeshGenerator : MonoBehaviour
 
         newMesh.vertices = vertices;
         newMesh.triangles = triangles;
-        // on recalcule la bounding box du mesh 
-        // C'est pour agir sur la boite englobante de l'objet 3D, pour le calcul de visibilité de la caméra
         newMesh.RecalculateBounds();
-
-
         return newMesh;
     }
 
-    Mesh CreateStrip(Vector3 size,int nSegments)
+    Mesh CreateStripXZQuads(Vector3 size, int nSegments)
     {
         Vector3 halfSize = size * .5f;
 
         Mesh newMesh = new Mesh();
-        newMesh.name = "strip";
+        newMesh.name = "stripQuads";
 
-        Vector3[] vertices = new Vector3[(nSegments+1)*2];
-        int[] triangles = new int[nSegments  * 2 * 3];
-        //vertices
-        for (int i=0;i< (nSegments + 1); i++){
-            vertices[i*2] = new Vector3(-halfSize.x+ (size.x*i/ (nSegments + 1)), 0, halfSize.z);
-            vertices[i*2+1] = new Vector3(-halfSize.x + (size.x * i / (nSegments + 1)), 0, -halfSize.z);
-        }
-        //triangles
-        int compt = 0;
-        for (int i = 0; i <triangles.Length; i=i+6)
+        Vector3[] vertices = new Vector3[(nSegments + 1) * 2];
+        int[] quads = new int[nSegments * 4];
+
+        //Vertices
+        for (int i = 0; i < nSegments + 1; i++)
         {
-            
-            triangles[i] = 0 + compt;
-            triangles[i + 1] = 2 + compt;
-            triangles[i + 2] = 1 + compt;
-
-            triangles[i + 3] = 1 + compt;
-            triangles[i + 4] = 2 + compt;
-            triangles[i + 5] = 3 + compt;
-            compt += 2;
+            float k = (float)i / nSegments;
+            float y = .25f * Mathf.Sin(k * Mathf.PI * 2 * 3);
+            vertices[i] = new Vector3(Mathf.Lerp(-halfSize.x, halfSize.x, k), y, -halfSize.z);
+            vertices[nSegments + 1 + i] = new Vector3(Mathf.Lerp(-halfSize.x, halfSize.x, k), y, halfSize.z);
         }
-        
+
+        //Triangles
+        int index = 0;
+        for (int i = 0; i < nSegments; i++)
+        {
+            quads[index++] = i;
+            quads[index++] = i + nSegments + 1;
+            quads[index++] = i + nSegments + 2;
+            quads[index++] = i + 1;
+        }
 
         newMesh.vertices = vertices;
-        newMesh.triangles = triangles;
-        // on recalcule la bounding box du mesh 
-        // C'est pour agir sur la boite englobante de l'objet 3D, pour le calcul de visibilité de la caméra
+        newMesh.SetIndices(quads, MeshTopology.Quads, 0);
         newMesh.RecalculateBounds();
-
-
+        newMesh.RecalculateNormals();
         return newMesh;
     }
 
-    Mesh CreatePlane(Vector3 size, int nSegmentsX, int nSegmentsZ)
+    Mesh WrapNormalizePlaneQuads(int nSegmentsX, int nSegmentsZ, ComputePositionFromKxKz computePosition)
     {
-        Vector3 halfSize = size * .5f;
-
         Mesh newMesh = new Mesh();
         newMesh.name = "plane";
-
         Vector3[] vertices = new Vector3[(nSegmentsX + 1) * (nSegmentsZ + 1)];
-        int[] triangles = new int[nSegmentsX* nSegmentsZ * 2 * 3];
-        //vertices
+        int[] quads = new int[nSegmentsX * nSegmentsZ * 4];
+        //Vertices
         int index = 0;
-        for (int i = 0; i < (nSegmentsX + 1); i++)
+        for (int i = 0; i < nSegmentsX + 1; i++)
         {
-            //float kx = (float)i / nSegmentsX;
-            for (int j = 0; j < (nSegmentsZ + 1); j++)
-            {               
-                //float kz = (float)j / nSegmentsZ;
-                //vertices[i * nSegmentsZ + j];
-                vertices[index++] = new Vector3(-halfSize.x + (size.x * i / nSegmentsX),
-                                                                 0,
-                                                                 halfSize.z - (size.z * j / nSegmentsZ) );
-            }
-        }
-        //triangles
-        int compt = 0;
-        index = 0;
-        for (int i = 0; i < nSegmentsX ; i++)
-        {
-            for (int j = 0; j < nSegmentsZ; j++)
+            float kX = (float)i / nSegmentsX;
+            for (int j = 0; j < nSegmentsZ + 1; j++)
             {
-                compt = j + i * (nSegmentsZ + 1);
-
-                triangles[index] = 0 + compt;
-                triangles[index + 1] = nSegmentsZ + 1 + 0 + compt;
-                triangles[index + 2] = 1 + compt;
-
-                triangles[index + 3] = 1 + compt;
-                triangles[index + 4] = nSegmentsZ + 1 + 0 + compt;
-                triangles[index + 5] = nSegmentsZ + 1 + 1 + compt;
-
-                index += 6;
+                float kZ = (float)j / nSegmentsZ;
+                vertices[index++] = computePosition(kX, kZ);
             }
         }
-      
-        newMesh.vertices = vertices;
-        newMesh.triangles = triangles;
-        // on recalcule la bounding box du mesh 
-        // C'est pour agir sur la boite englobante de l'objet 3D, pour le calcul de visibilité de la caméra
-        newMesh.RecalculateBounds();
 
-        return newMesh;
-    }
-
-    Mesh WrapNormalizeCreatePlane(int nSegmentsX, int nSegmentsZ, ComputeVector3FromKxKz computePosition)
-    {
-        Mesh newMesh = new Mesh();
-        newMesh.name = "wrapNormalizedPlane";
-
-        Vector3[] vertices = new Vector3[(nSegmentsX + 1) * (nSegmentsZ + 1)];
-        int[] triangles = new int[nSegmentsX * nSegmentsZ * 2 * 3];
-        //vertices
-        int index = 0;
-        for (int i = 0; i < (nSegmentsX + 1); i++)
-        {
-            float kx = (float)i / nSegmentsX;
-            for (int j = 0; j < (nSegmentsZ + 1); j++)
-            {
-                float kz = (float)j / nSegmentsZ;
-                //vertices[i * nSegmentsZ + j];
-                //vertices[i * nSegmentsZ + j] = new Vector3(-halfSize.x + (size.x * i / nSegmentsX),
-                //                                                0,
-                //                                              halfSize.z - (size.z * j / nSegmentsZ));
-                //mathf.Lerp()
-                vertices[index++] = computePosition(kx, kz);
-            }
-        }
-        //triangles
-        int compt = 0;
+        //Quads
         index = 0;
+        //double boucle également
         for (int i = 0; i < nSegmentsX; i++)
         {
             for (int j = 0; j < nSegmentsZ; j++)
             {
-                compt = j + i * (nSegmentsZ+1);
-
-                triangles[index] = 0 + compt;
-                triangles[index + 1] = 1 + compt; 
-                triangles[index + 2] = nSegmentsZ + 1 + 0 + compt;
-
-                triangles[index + 3] = 1 + compt;
-                triangles[index + 4] = nSegmentsZ + 1 + 1 + compt; 
-                triangles[index + 5] = nSegmentsZ + 1 + 0 + compt;
-                index += 6;
+                quads[index++] = i * (nSegmentsZ + 1) + j;
+                quads[index++] = i * (nSegmentsZ + 1) + j + 1;
+                quads[index++] = (i + 1) * (nSegmentsZ + 1) + j + 1;
+                quads[index++] = (i + 1) * (nSegmentsZ + 1) + j;
             }
         }
 
         newMesh.vertices = vertices;
-        newMesh.triangles = triangles;
-        // on recalcule la bounding box du mesh 
-        // C'est pour agir sur la boite englobante de l'objet 3D, pour le calcul de visibilité de la caméra
+        newMesh.SetIndices(quads, MeshTopology.Quads, 0);
         newMesh.RecalculateBounds();
-
+        newMesh.RecalculateNormals();
         return newMesh;
     }
-    Mesh WrapNormalizeCreatePlaneQuads(int nSegmentsX, int nSegmentsZ, ComputeVector3FromKxKz computePosition)
-    {
-        Mesh newMesh = new Mesh();
-        newMesh.name = "wrapNormalizedPlane";
 
-        Vector3[] vertices = new Vector3[(nSegmentsX + 1) * (nSegmentsZ + 1)];
-        int[] quads = new int[nSegmentsX * nSegmentsZ * 3];
-        //vertices
-        int index = 0;
-        for (int i = 0; i < (nSegmentsX + 1); i++)
-        {
-            float kx = (float)i / nSegmentsX;
-            for (int j = 0; j < (nSegmentsZ + 1); j++)
-            {
-                float kz = (float)j / nSegmentsZ;
-                vertices[index++] = computePosition(kx, kz);
-            }
-        }
-        //triangles
-        int compt = 0;
-        index = 0;
-        for (int i = 0; i < nSegmentsX; i++)
-        {
-            for (int j = 0; j < nSegmentsZ; j++)
-            {
-                compt =  (nSegmentsZ + 1);
-
-                quads[index++] = 0 + i* compt +j;
-                quads[index++] = 1 + i * compt* + j;
-                quads[index++] = 1 + 0 + (i+1)*compt + j;
-                quads[index++] = 0 + 0 + (i+1)*compt + j;
-
-                index += 4;
-            }
-        }
-
-        newMesh.vertices = vertices;
-        newMesh.SetIndices(quads,new MeshTopology(),0);
-
-
-        newMesh.RecalculateBounds();
-
-        return newMesh;
-    }
-    /*
     Mesh CreateRegularPolygonXZQuads(float radius, int nQuads)
-
     {
-
         Mesh newMesh = new Mesh();
-
         newMesh.name = "RegularPolygonQuads";
 
-
-        Vector3[] vertices = new Vector3[??];
-
+        Vector3[] vertices = new Vector3[nQuads * 2 + 1];
         int[] quads = new int[nQuads * 4];
-
 
         vertices[0] = Vector3.zero;
 
 
-        //Vertices
-
-        for (int i = 0; i < ???; i++)
-
+        Vector3[] points = new Vector3[nQuads];
+        //Points
+        for (int i = 0; i< nQuads; i++)
         {
-
+            float x = Mathf.Sin(((float)i / nQuads) * 2 * Mathf.PI);
+            float z = Mathf.Cos(((float)i / nQuads) * 2 * Mathf.PI);         
+            points[i] = new Vector3(x,0,z);
         }
 
+
+        //Vertices
+        int index = 1;
+        for (int i = 0; i < nQuads; i++)
+        {
+            vertices[index++] = points[i];
+            int idx = (i + 1) % nQuads ;
+            Vector3 a = points[i];
+            Vector3 b = points[idx];
+            Vector3 c = (a + b) / 2;
+            vertices[index++] = c;
+        }
 
         //Quads
-
-        int index = 0;
-
-        for (int i = 0; i < nQuads; i++)
-
+        index = 0;
+        for (int i = 0; i < nQuads - 1; i++)
         {
-
-            quads[index++] =????;
-
-            quads[index++] =????;
-
-            quads[index++] =????;
-
-            quads[index++] =????;
-
+            quads[index++] = 0;
+            quads[index++] = (2 * (i + 1));
+            quads[index++] = (2 * (i + 1) + 1);
+            quads[index++] = (2 * (i + 1) + 2);
         }
+        quads[index++] = 0;
+        quads[index++] = nQuads * 2;
+        quads[index++] = 1;
+        quads[index++] = 2;
+
 
 
         newMesh.vertices = vertices;
-
         newMesh.SetIndices(quads, MeshTopology.Quads, 0);
-
         newMesh.RecalculateBounds();
-
         newMesh.RecalculateNormals();
-
         return newMesh;
-
-    }*/
+    }
+    #endregion
 }

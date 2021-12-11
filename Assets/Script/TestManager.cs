@@ -1,41 +1,89 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using static GeometricClass;
 using static GeometricServices;
 public class TestManager : MonoBehaviour
 {
-
-    public GameObject obj;
-    public GameObject sphere;
-    static Vector3 A = new Vector3(1, 2, 3);
-    static Vector3 B = -A;
-    static Segment AB = new Segment { pt1 = A, pt2 = B };
-    // Start is called before the first frame update
-    void Update()
+    MeshFilter m_Mf;
+    [Header("Parameters")]
+    [SerializeField] GameObject Plane;
+    [SerializeField] GameObject Sphere;
+    [SerializeField] GameObject Cylinder;
+    [SerializeField] GameObject PointA;
+    [SerializeField] GameObject PointB;
+    [SerializeField] float pointSize;
+    void OnDrawGizmos()
     {
-        DrawSegment(AB);
-    }
+        #region Segment
+        {
+            GUIStyle myStyle = new GUIStyle();
+            myStyle.fontSize = 16;
+            myStyle.normal.textColor = Color.red;
 
-    // Update is called once per frame
-    void Start()
-    {       
-        Vector3 norm = new Vector3(0, 1, 0);
-        float d = 1;
-        GeometricClass.Plane plane = new GeometricClass.Plane { Normal = norm, d = d };
-        Vector3 interpt;
-        Vector3 interNormal;
-        bool test =  InterSegmentPlane( AB, plane, out interpt, out interNormal);
+            Gizmos.color = Color.red;
+            Vector3 posA = PointA.transform.position;
+            Vector3 posB = PointB.transform.position;
 
+            Gizmos.DrawSphere(posA, pointSize);
+            Handles.Label(posA, "A", myStyle);
+            Gizmos.DrawSphere(posB, pointSize);
+            Handles.Label(posB, "B", myStyle);
+            Gizmos.DrawLine(posA, posB);
+        }
+        #endregion
 
-        Debug.Log("scale: " + sphere.gameObject.transform.localScale.x);
-        GeometricClass.Circle circle = new GeometricClass.Circle { radius = sphere.gameObject.transform.localScale.x, center = new Vector3(0,0,0) };
-        test = InterSegmentCircle(AB, circle, out interpt, out interNormal);
-        Debug.Log(test);
-        Debug.Log(interpt);
-        Instantiate(obj, interpt, new Quaternion());
-        Instantiate(sphere,  circle.center, new Quaternion());
+        #region Plane
+        {            
+            Vector3 interpt;
+            Vector3 interNormal;
+            Segment segment = new Segment { pt1 = PointA.transform.position, pt2 = PointB.transform.position };
+            Vector3 norm = Plane.transform.up;
+            GeometricClass.Plane plane = new GeometricClass.Plane { Normal = norm, d = Plane.transform.position.y };
+            if (InterSegmentPlane(segment, plane, out interpt, out interNormal))
+            {
+                Gizmos.color = Color.blue;
+                Gizmos.DrawSphere(interpt, pointSize);
+                Gizmos.color = Color.white;
+                Gizmos.DrawLine(interpt, interpt + interNormal * 10);
+            }
+        }
+        #endregion
 
+        #region Cylinder
+        {
+            Vector3 interpt;
+            Vector3 interNormal;
+            Segment segment = new Segment { pt1 = PointA.transform.position, pt2 = PointB.transform.position };
+            GeometricClass.Cylinder cylinder = new GeometricClass.Cylinder { pt1= Cylinder.transform.position, pt2 = Cylinder.transform.position + Cylinder.transform.up, radius = Cylinder.transform.localScale.x/2};
+            if (InterSegmentCylinder(segment, cylinder, out interpt, out interNormal))
+            {
+                Gizmos.color = Color.cyan;
+                Gizmos.DrawSphere(interpt, pointSize);
+                Gizmos.color = Color.white;
+                Gizmos.DrawLine(interpt, interpt + interNormal * 10);
+            }
 
+            Vector3 interpt2;
+            //InterSegmentCylinder2(segment, cylinder, out interpt, out interpt2, out interNormal);
+        }
+        #endregion
+
+        #region Sphere
+        {
+            Vector3 interpt;
+            Vector3 interNormal;
+            Segment segment = new Segment { pt1 = PointA.transform.position, pt2 = PointB.transform.position };
+            GeometricClass.Sphere sphere = new GeometricClass.Sphere { center = Sphere.transform.position, radius = Sphere.transform.localScale.x/2 };
+            if (InterSegmentSphere(segment, sphere, out interpt, out interNormal))
+            {
+                Gizmos.color = Color.magenta;
+                Gizmos.DrawSphere(interpt, pointSize);
+                Gizmos.color = Color.white;
+                Gizmos.DrawLine(interpt, interpt + interNormal * 10);
+            }
+        }
+        #endregion
     }
 }

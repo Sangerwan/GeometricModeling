@@ -22,6 +22,6 @@ public class TestCatmullClark : MonoBehaviour
             m_Mf.sharedMesh = CatmullClark.Catmull_Clark(m_Mf.sharedMesh, nb_iterations);
             Debug.Log("Catmull");
         }
-        Debug.Log(MeshDisplayInfo2.ExportMeshCSV(m_Mf.sharedMesh));
+        Debug.Log(MeshDisplayInfo.ExportMeshCSV(m_Mf.sharedMesh));
     }
 }

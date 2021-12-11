@@ -37,98 +37,179 @@ public static class GeometricServices
 		{
 			interNormal = -plane.Normal;
 		}
+		interNormal.Normalize();
 		return true;
 	}
 
-	public static bool InterSegmentCircle(Segment segment, GeometricClass.Circle circle, out Vector3 interpt, out Vector3 interNormal)
+	public static bool isValid(float t)
+    {
+		return t>=0 && t<=1;
+
+	}
+
+	public static bool InterSegmentSphere(Segment segment, GeometricClass.Sphere sphere, out Vector3 interpt, out Vector3 interNormal)
 	{
 		interpt = new Vector3();
 		interNormal = new Vector3();
 		//1
-		Vector3 AB = segment.pt2 - segment.pt1; 
-		Vector3 OmgA = segment.pt1 - circle.center;
-		float R = circle.radius;
-		Debug.Log("Radius:" + R);
-		float t1 = (-Vector3.Magnitude(OmgA) * Mathf.Cos(Vector3.Angle(OmgA, AB)) + R)/ Vector3.Magnitude(AB);
-		float t2 = (-Vector3.Magnitude(OmgA) * Mathf.Cos(Vector3.Angle(OmgA, AB)) + R) / Vector3.Magnitude(AB);
-		
-		if (t1 < 0 || t1 > 1)
-		{
-			return false;
-		}
-		//5
-		//interpt = segment.pt1 + t1 * AB;
-		interpt = OmgA + t1 * AB;
-		//interNormal = plane.Normal;
-		return true;
-	}
 
-	public static void DrawSegment(Segment seg)
-    {
-		Debug.DrawLine(seg.pt1, seg.pt2,Color.red,10);
-    }
-
-	public static bool InterCylinderSegment(Segment seg, Cylindre cyl, out Vector3 interpt, out Vector3 internormal)
-    {
-		interpt = new Vector3();
-		internormal = new Vector3();
-		//1
-		Vector3 u = (cyl.pt2 - cyl.pt1) / Vector3.Magnitude(cyl.pt2 - cyl.pt1);
-		Vector3 AB = seg.pt2 - seg.pt1;
-		Vector3 PA = cyl.pt1 - seg.pt2;
-		
-		float t1 = -((2 * Vector3.Dot(AB,PA)) * (1 - 4 * Vector3.Dot(u, u) + 3 * Vector3.Dot(u, u) * Vector3.Dot(u, u)) - Mathf.Sqrt(Mathf.Pow((2 * Vector3.Dot(AB,PA)) * (1 - 4 * Vector3.Dot(u, u) + 3 * Vector3.Dot(u, u) * Vector3.Dot(u, u)), 2)
-			- 4 * Vector3.Dot(AB,AB) * (1 - 2 * Vector3.Dot(u, u) + Vector3.Dot(u, u) * Vector3.Dot(u, u)) * (Vector3.Dot(PA,PA) * (1 - 2 * Vector3.Dot(u, u) + Vector3.Dot(u, u) * Vector3.Dot(u, u)) - cyl.radius)) / (2 * 4 * Vector3.Dot(AB,AB) * (1 - 2 * Vector3.Dot(u, u) + Vector3.Dot(u, u) * Vector3.Dot(u, u))));
-		float t2 = -((2 * Vector3.Dot(AB,PA)) * (1 - 4 * Vector3.Dot(u, u) + 3 * Vector3.Dot(u, u) * Vector3.Dot(u, u)) + Mathf.Sqrt(Mathf.Pow((2 * Vector3.Dot(AB,PA)) * (1 - 4 * Vector3.Dot(u, u) + 3 * Vector3.Dot(u, u) * Vector3.Dot(u, u)), 2)
-			- 4 * Vector3.Dot(AB,AB) * (1 - 2 * Vector3.Dot(u, u) + Vector3.Dot(u, u) * Vector3.Dot(u, u)) * (Vector3.Dot(PA,PA) * (1 - 2 * Vector3.Dot(u, u) + Vector3.Dot(u, u) * Vector3.Dot(u, u)) - cyl.radius)) / (2 * 4 * Vector3.Dot(AB,AB) * (1 - 2 * Vector3.Dot(u, u) + Vector3.Dot(u, u) * Vector3.Dot(u, u))));
-		if (t1 < 0 || t1 > 1)
-		{
-			return false;
-		}
-		return true;
-	}
-
-	//public static void DrawPlane(GeometricClass.Plane plane)
-	//{
-	//	Debug.DrawSurface(seg.pt1, seg.pt2, Color.red);
-	//}
-
-	///a tester
-	public static bool InterSegCylInf(Segment segment, Cylindre cylinder, out Vector3 interPt1, out Vector3 interPt2, out Vector3 interNormal)
-	{
-		interPt1 = new Vector3();
-		interPt2 = new Vector3();
-		interNormal = new Vector3();
-
-		Vector3 u = (cylinder.pt2 - cylinder.pt1) / Vector3.Magnitude(cylinder.pt2 - cylinder.pt1);
 		Vector3 AB = segment.pt2 - segment.pt1;
-		Vector3 PA = cylinder.pt1 - segment.pt2;
+		Vector3 OA = segment.pt1 - sphere.center;
+
+
+		float a = Vector3.Dot(AB, AB);
+		float b = 2f * Vector3.Dot(OA, AB);
+		float c = Vector3.Dot(OA,OA) - sphere.radius * sphere.radius;
+
+		float det = b * b - 4f * a * c;
+
+		if (det < 0)
+        {
+			return false;
+        }
+
+		float x1 = (-b - Mathf.Sqrt(det))/(2f*a);
+		float x2 = (-b + Mathf.Sqrt(det))/(2f*a);
+
+		if(isValid(x1))
+        {
+			interpt = segment.pt1 + x1 * AB;
+			interNormal = (interpt - sphere.center);
+			interNormal.Normalize();
+			return true;
+		}
+		if (isValid(x2))
+		{
+			interpt = segment.pt1 + x2 * AB;
+			interNormal = -(interpt - sphere.center);
+			interNormal.Normalize();
+			return true;
+		}
+
+		return false;
+	}
+
+    public static bool InterSegmentCylinder(Segment segment, Cylinder cylinder, out Vector3 interpt, out Vector3 interNormal)
+    {
+        interpt = new Vector3();
+        interNormal = new Vector3();
+
+        Vector3 AB = segment.pt2 - segment.pt1;
+		Vector3 PA = segment.pt1 - cylinder.pt1;
 		Vector3 PQ = cylinder.pt2 - cylinder.pt1;
+		Vector3 u = PQ / PQ.magnitude;
 
-		float a = AB.magnitude * AB.magnitude - (Vector3.Dot(PQ, AB) * Vector3.Dot(PQ, AB)) / (PQ.magnitude * PQ.magnitude);
-		float b = 2 * Vector3.Dot(PA, AB) - 2 * ((Vector3.Dot(AB, PQ) * Vector3.Dot(PA, PQ)) / (PQ.magnitude * PQ.magnitude));
-		float c = Vector3.Dot(PA, PA) - ((Vector3.Dot(PA, PQ) * Vector3.Dot(PA, PQ)) / (PQ.magnitude * PQ.magnitude));
+        float a1 =
+            Vector3.Dot(AB, AB)
+            + (Vector3.Dot(AB, PQ) / PQ.magnitude)
+            * (
+                -2 * Vector3.Dot(AB, u)
+                + (Vector3.Dot(AB, PQ) / PQ.magnitude) * Vector3.Dot(u, u)
+            );
 
-		float Delt = (b * b) - 4 * a * c;
+        float b1 =
+            2f *
+            (
+                Vector3.Dot(AB, PA)
+                - Vector3.Dot(PA, (Vector3.Dot(AB, PQ) / PQ.magnitude) * u)
+                - Vector3.Dot(AB, (Vector3.Dot(PA, PQ) / PQ.magnitude) * u)
+            );
 
-		float racine1;
-		float racine2;
+        float c1 =
+            Vector3.Dot(PA, PA)
+            - 2f * Vector3.Dot(PA, (Vector3.Dot(PA, PQ) / PQ.magnitude) * u)
+            + (Vector3.Dot(PA, PQ) / PQ.magnitude) * (Vector3.Dot(PA, PQ) / PQ.magnitude) * Vector3.Dot(u, u)
+            - cylinder.radius * cylinder.radius;
 
-		if (Delt < 0)
+        float a = Vector3.Dot(AB, AB) - 2 * Vector3.Dot(AB, Vector3.Dot(AB,PQ)/PQ.magnitude * u) + Mathf.Pow(Vector3.Dot(AB, PQ)/PQ.magnitude, 2)* Vector3.Dot(u,u);
+		float b = 2 * Vector3.Dot(AB, PA) - 4 * Vector3.Dot(AB, Vector3.Dot(PA, PQ) / PQ.magnitude * u) + 2*Vector3.Dot(AB,PQ)*Vector3.Dot(PA,PQ)/Mathf.Pow(PQ.magnitude, 2) * Vector3.Dot(u,u);
+		float c = Vector3.Dot(PA,PA) - 2 *  Vector3.Dot(PA, Vector3.Dot(PA,PQ) / PQ.magnitude * u) + Mathf.Pow(Vector3.Dot(PA, PQ)/PQ.magnitude,2) *Vector3.Dot(u, u) - Mathf.Pow(cylinder.radius, 2);
+
+        Debug.Log(Vector3.Dot(AB, PA));
+        Debug.Log("a" + a);
+        Debug.Log("b" + b);
+        Debug.Log("c" + c);
+
+
+        float det = b * b - 4f * a * c;
+		Debug.Log("det "+ det);
+		if (det < 0)
 		{
 			return false;
 		}
-		else
+
+		float x1 = (-b - Mathf.Sqrt(det)) / (2f * a);
+		float x2 = (-b + Mathf.Sqrt(det)) / (2f * a);
+
+		if (isValid(x1))
 		{
-			racine1 = (-b - Mathf.Sqrt(Delt)) / 2 * a;
-			racine2 = (-b + Mathf.Sqrt(Delt)) / 2 * a;
+			interpt = segment.pt1 + x1 * AB;
+			Debug.Log("inter " + interpt);
+			//interNormal = (interpt - cylinder.center);
+			//interNormal.Normalize();
+			return true;
+		}
+		if (isValid(x2))
+		{
+			interpt = segment.pt1 + x2 * AB;
+			Debug.Log("inter " + interpt);
+			//interNormal = -(interpt - cylinder.center);
+			//interNormal.Normalize();
+			return true;
 		}
 
-		float t1 = racine1;
-		float t2 = racine2;
-		interPt1 = segment.pt1 + t1 * AB;
-		interPt2 = segment.pt1 + t2 * AB;
-
-		return true;
+		return false;
 	}
+
+
+    /////a tester
+    //public static bool InterSegmentCylinder2(Segment segment, Cylinder cylinder, out Vector3 interPt1, out Vector3 interPt2, out Vector3 interNormal)
+    //{
+    //    interPt1 = new Vector3();
+    //    interPt2 = new Vector3();
+    //    interNormal = new Vector3();
+
+    //    Vector3 u = (cylinder.pt2 - cylinder.pt1) / Vector3.Magnitude(cylinder.pt2 - cylinder.pt1);
+    //    Vector3 AB = segment.pt2 - segment.pt1;
+    //    Vector3 PA = segment.pt1 - cylinder.pt1;
+
+    //    float a = AB.magnitude * AB.magnitude - (1 - 2 * Vector3.Dot(u, u) + Vector3.Dot(u, u) * Vector3.Dot(u, u));
+    //    float b = Vector3.Dot(AB, PA) * (1 - 4 * Vector3.Dot(u, u) + 3 * Vector3.Dot(u, u) * Vector3.Dot(u, u));
+    //    float c = Vector3.Dot(PA, PA) - (1 - 2 * Vector3.Dot(u, u) + Vector3.Dot(u, u) * Vector3.Dot(u, u)) - cylinder.radius * cylinder.radius;
+    //    Debug.Log(Vector3.Dot(AB, PA));
+    //    Debug.Log("a2" + a);
+    //    Debug.Log("b2" + b);
+    //    Debug.Log("c2" + c);
+
+
+    //    float Delt = (b * b) - 4 * a * c;
+
+    //    float racine1;
+    //    float racine2;
+
+    //    if (Delt < 0)
+    //    {
+    //        return false;
+    //    }
+    //    else
+    //    {
+    //        racine1 = (-b - Mathf.Sqrt(Delt)) / 2 * a;
+    //        racine2 = (-b + Mathf.Sqrt(Delt)) / 2 * a;
+    //    }
+
+    //    float t1 = racine1;
+    //    float t2 = racine2;
+    //    Debug.Log(t1);
+    //    Debug.Log(t2);
+    //    if (!(t1 < 0 || t1 > 1))
+    //    {
+    //        Debug.Log(t1);
+    //        Debug.Log(t2);
+    //    }
+
+    //    interPt1 = segment.pt1 + t1 * AB;
+    //    interPt2 = segment.pt1 + t2 * AB;
+
+    //    return true;
+    //}
 }
