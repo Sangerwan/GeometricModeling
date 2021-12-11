@@ -40,10 +40,10 @@ public class HalfEdge
     public HalfEdge(Vertex v, Face f)
     {
         this.source = v;
-        this.face = f; 
+        this.face = f;
     }
 
-    public HalfEdge(int i, Vertex source, HalfEdge prev=null, HalfEdge next = null, HalfEdge twin = null, Face face = null)
+    public HalfEdge(int i, Vertex source, HalfEdge prev = null, HalfEdge next = null, HalfEdge twin = null, Face face = null)
     {
         this.index = i;
         this.source = source;
@@ -63,44 +63,89 @@ public class HalfEdgeMesh
     public List<Vertex> vertices = new List<Vertex>();
     public List<HalfEdge> edges = new List<HalfEdge>();
     public List<Face> faces = new List<Face>();
-
+    public Dictionary<Vector3, List<Face>> neighboursFaces = new Dictionary<Vector3, List<Face>>();
     public bool hasNormal() { return true; }
 
     public bool hasUV() { return true; }
 
-    public void setTwinEdges()
+    public void Add(HalfEdge h)
+    {
+        h.index = edges.Count;
+        edges.Add(h);
+    }
+
+    public void Add(Vertex v)
+    {
+        v.index = vertices.Count;
+        vertices.Add(v);
+    }
+
+    public void Add(Face f)
+    {
+        f.index = faces.Count;
+        faces.Add(f);
+    }
+
+    public void SetTwinEdges()
     {
         List<HalfEdge> foundEdges = new List<HalfEdge>();
         foreach (var edge in edges)
         {
             if (foundEdges.Contains(edge)) continue;
-            foreach (var twinEdge in edges)
+
+            foreach (var face in neighboursFaces[edge.source.position])
             {
-                if (Equals(twinEdge, edge))
+                HalfEdge twinEdge = face.edge;
+                for (int i = 0; i < 4; i++)
                 {
-                    continue;
-                }
-                if (foundEdges.Contains(twinEdge))
-                {
-                    continue;
-                }
+                    if (!(foundEdges.Contains(edge) || Equals(twinEdge, edge)))
+                    {
+                        Vector3 edgeSource = edge.source.position;
+                        Vector3 edgeNext = edge.nextEdge.source.position;
+                        Vector3 twinEdgeSource = twinEdge.source.position;
+                        Vector3 twinEdgeNext = twinEdge.nextEdge.source.position;
 
-                Vertex edgeSource = edge.source;
-                Vertex edgeNext = edge.nextEdge.source;
-                Vertex twinEdgeSource = twinEdge.source;
-                Vertex twinEdgeNext = twinEdge.nextEdge.source;
-
-
-                if (edgeSource.position == twinEdgeNext.position && edgeNext.position == twinEdgeSource.position)
-                {
-                    edge.twinEdge = twinEdge;
-                    twinEdge.twinEdge = edge;
-                    foundEdges.Add(twinEdge);
-                    foundEdges.Add(edge);
+                        if (edgeSource == twinEdgeNext && edgeNext == twinEdgeSource)
+                        {
+                            edge.twinEdge = twinEdge;
+                            twinEdge.twinEdge = edge;
+                            foundEdges.Add(twinEdge);
+                            foundEdges.Add(edge);
+                        }
+                    }
+                    twinEdge = twinEdge.nextEdge;
                 }
             }
         }
     }
+
+    public Face[] GetNeighboursFaces(Vertex v)
+    {
+        return neighboursFaces[v.position].ToArray();
+    }
+
+    public HalfEdge[] GetNeighboursEdges(Vertex v)
+    {
+        List<HalfEdge> edges = new List<HalfEdge>();
+        foreach (var face in neighboursFaces[v.position])
+        {
+            HalfEdge edge = face.edge;
+            for (int i = 0; i < 4; i++)
+            {
+                if (edge.source.position == v.position)
+                    edges.Add(edge);
+                edge = edge.nextEdge;
+            }
+        }
+        return edges.ToArray();
+    }
+
+    public void GetNeighboursFacesEdges(Vertex v, out Face[] faces, out HalfEdge[] edges)
+    {
+        faces = GetNeighboursFaces(v);
+        edges = GetNeighboursEdges(v);
+    }
+
 }
 
 

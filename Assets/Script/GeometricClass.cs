@@ -10,7 +10,7 @@ public static class GeometricClass
         public Vector3 pt2;
     }
 
-    public struct Cylindre
+    public struct Cylinder
     {
         public Vector3 pt1;
         public Vector3 pt2;
@@ -22,7 +22,7 @@ public static class GeometricClass
         public Vector3 Normal;
         public float d;
     }
-    public struct Circle
+    public struct Sphere
     {
         public Vector3 center;
         public float radius;

@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System.Linq;
 public class CatmullClark : MonoBehaviour
 {
     // Start is called before the first frame update
@@ -57,7 +56,7 @@ public class CatmullClark : MonoBehaviour
          */
     }
 
-    public static void trianglesToQuads(Mesh mesh, out int[] quads)
+    public static void TrianglesToQuads(Mesh mesh, out int[] quads)
     {
         Vector3[] triVertices = mesh.vertices;
         int[] triIndices = mesh.triangles;
@@ -81,12 +80,15 @@ public class CatmullClark : MonoBehaviour
 
         int[] quads;
         Vector3[] vertices = mesh.vertices;
-        trianglesToQuads(mesh, out quads);
+        TrianglesToQuads(mesh, out quads);
 
-        for(int i =0; i < vertices.Length; i++)
+        for (int i = 0; i < vertices.Length; i++)
         {
-            halfEdgeMesh.vertices.Add(new Vertex(vertices[i],i));
+            halfEdgeMesh.vertices.Add(new Vertex(vertices[i], i));
         }
+
+        //store neighbours faces 
+        Dictionary<Vector3, List<Face>> neighboursFaces = new Dictionary<Vector3, List<Face>>();
 
         int index = 0;
 
@@ -102,7 +104,7 @@ public class CatmullClark : MonoBehaviour
             HalfEdge halfEdge3 = new HalfEdge(index + 2, vertex3);
             HalfEdge halfEdge4 = new HalfEdge(index + 3, vertex4);
 
-            Face face = new Face(index);
+            Face face = new Face(index / 4);
             face.edge = halfEdge1;
             halfEdgeMesh.faces.Add(face);
 
@@ -126,17 +128,30 @@ public class CatmullClark : MonoBehaviour
             halfEdgeMesh.edges.Add(halfEdge3);
             halfEdgeMesh.edges.Add(halfEdge4);
 
+            if (!neighboursFaces.ContainsKey(halfEdge1.source.position))
+                neighboursFaces.Add(halfEdge1.source.position, new List<Face>());
+            neighboursFaces[halfEdge1.source.position].Add(face);
+
+            if (!neighboursFaces.ContainsKey(halfEdge2.source.position))
+                neighboursFaces.Add(halfEdge2.source.position, new List<Face>());
+            neighboursFaces[halfEdge2.source.position].Add(face);
+
+            if (!neighboursFaces.ContainsKey(halfEdge3.source.position))
+                neighboursFaces.Add(halfEdge3.source.position, new List<Face>());
+            neighboursFaces[halfEdge3.source.position].Add(face);
+
+            if (!neighboursFaces.ContainsKey(halfEdge4.source.position))
+                neighboursFaces.Add(halfEdge4.source.position, new List<Face>());
+            neighboursFaces[halfEdge4.source.position].Add(face);
+
             index += 4;
         }
-
-        halfEdgeMesh.setTwinEdges();
-
-        
-
+        halfEdgeMesh.neighboursFaces = neighboursFaces;
+        halfEdgeMesh.SetTwinEdges();
         return halfEdgeMesh;
 
     }
-    
+
     public static Mesh HalfEdgeToVertexFace(HalfEdgeMesh halfEdgeMesh)
     {
         Mesh newMesh = new Mesh();
@@ -144,12 +159,12 @@ public class CatmullClark : MonoBehaviour
         List<Vector3> vertices = halfEdgeMesh.vertices.ConvertAll(x => x.position);
         List<int> quads = new List<int>();
 
-        foreach( var face in halfEdgeMesh.faces)
+        foreach (var face in halfEdgeMesh.faces)
         {
-            quads.Add(vertices.FindIndex(x => x == face.edge.source.position));
-            quads.Add(vertices.FindIndex(x => x == face.edge.nextEdge.source.position));
-            quads.Add(vertices.FindIndex(x => x == face.edge.nextEdge.nextEdge.source.position));
-            quads.Add(vertices.FindIndex(x => x == face.edge.nextEdge.nextEdge.nextEdge.source.position));
+            quads.Add(face.edge.source.index);
+            quads.Add(face.edge.nextEdge.source.index);
+            quads.Add(face.edge.nextEdge.nextEdge.source.index);
+            quads.Add(face.edge.nextEdge.nextEdge.nextEdge.source.index);
         }
 
         newMesh.vertices = vertices.ToArray();
@@ -160,218 +175,247 @@ public class CatmullClark : MonoBehaviour
         return newMesh;
     }
 
-    public static Vertex facePoint(Face f)
+    public static Vertex FacePoint(Face f)
     {
-        Vertex vertice1 = f.edge.source;
-        Vertex vertice2 = f.edge.nextEdge.source;
-        Vertex vertice3 = f.edge.nextEdge.nextEdge.source;
-        Vertex vertice4 = f.edge.nextEdge.nextEdge.nextEdge.source;
-        Vertex result = new Vertex((vertice1.position + vertice2.position + vertice3.position + vertice4.position) / 4);
-        return result;
+        Vector3 vertex1 = f.edge.source.position;
+        Vector3 vertex2 = f.edge.nextEdge.source.position;
+        Vector3 vertex3 = f.edge.nextEdge.nextEdge.source.position;
+        Vector3 vertex4 = f.edge.nextEdge.nextEdge.nextEdge.source.position;
+        Vector3 result = (vertex1 + vertex2 + vertex3 + vertex4);
+        result /= 4;
+        return new Vertex(result);
     }
 
-    public static Vertex edgePoint(HalfEdge edge)
+    public static Vertex EdgePoint(HalfEdge edge)
     {
-        Vertex vertice1 = edge.source;
-        Vertex vertice2 = edge.nextEdge.source;
+        Vertex vertex1 = edge.source;
+        Vertex vertex2 = edge.nextEdge.source;
         Vertex result;
         if (edge.twinEdge != null)
         {
-            Face face1 = edge.face;
-            Face face2 = edge.twinEdge.face;            
-
-            Vertex vertice3 = facePoint(edge.face);
-            Vertex vertice4 = facePoint(edge.twinEdge.face);
-            result = new Vertex((vertice1.position + vertice2.position + vertice3.position + vertice4.position) / 4);
+            Vertex vertex3 = FacePoint(edge.face);
+            Vertex vertex4 = FacePoint(edge.twinEdge.face);
+            result = new Vertex((vertex1.position + vertex2.position + vertex3.position + vertex4.position) / 4);
         }
         else
         {
-            result = new Vertex((vertice1.position + vertice2.position) / 2);
+            result = new Vertex((vertex1.position + vertex2.position) / 2);
         }
         return result;
     }
 
-    public static Face[] getNeighboursFaces(Vertex v, HalfEdgeMesh halfEdgeMesh)
-    {
-        List<Face> faces = new List<Face>();
-        foreach(var edges in halfEdgeMesh.edges)
-        {
-            if(edges.source == v)
-            {
-                faces.Add(edges.face);
-            }
-        }
-        return faces.ToArray();
-    }
-
-    public static HalfEdge[] getNeighboursEdges(Vertex v, HalfEdgeMesh halfEdgeMesh)
-    {
-        List<HalfEdge> edges = new List<HalfEdge>();
-        foreach(var edge in halfEdgeMesh.edges)
-        {
-            if(edge.source == v)
-            {
-                edges.Add(edge);
-            }
-        }
-        return edges.ToArray();
-    }
-
-    public static void getNeighboursFacesEdges(Vertex v, HalfEdgeMesh halfEdgeMesh,out Face[] faces, out HalfEdge[] edges)
-    {
-        faces = getNeighboursFaces(v, halfEdgeMesh);
-        edges = getNeighboursEdges(v, halfEdgeMesh);
-    }
-
-    public static Vertex vertexPoint(Vertex v, HalfEdgeMesh halfEdgeMesh)
+    public static Vertex VertexPoint(Vertex v, HalfEdgeMesh halfEdgeMesh)
     {
         Face[] faces;
         HalfEdge[] edges;
 
-        getNeighboursFacesEdges(v, halfEdgeMesh,out faces, out edges);
+        halfEdgeMesh.GetNeighboursFacesEdges(v, out faces, out edges);
 
         int n = edges.Length;
-        if(n >= 4)
+        if (n >= 3)
         {
             Vector3 Q = new Vector3();
             Vector3 R = new Vector3();
             for (int i = 0; i < faces.Length; i++)
             {
-                Q += facePoint(faces[i]).position;
+                Q += FacePoint(faces[i]).position;
             }
             Q /= faces.Length;
 
             for (int i = 0; i < edges.Length; i++)
             {
-                R += edges[i].source.position + edges[i].nextEdge.source.position;
+                R += (edges[i].source.position + edges[i].nextEdge.source.position) / 2;
             }
             R /= edges.Length;
-            return new Vertex(Q / n + (2 * R) / n + ((n - 3) / n) * v.position, v.index);
+            return new Vertex(Q / n + 2 * R / n + (n - 3) * v.position / n, v.index);
         }
-        else
+        else //boundary
         {
             return v;
         }
     }
 
-    public static void splitEdge(HalfEdge e, Vertex v, HalfEdgeMesh halfEdgeMesh)
+    /// <summary>
+    /// split an edge in 2
+    /// </summary>
+    /// <param name="e"></param>
+    /// <param name="v"></param>
+    /// <param name="halfEdgeMesh"></param>
+    /// <returns></returns>
+    public static HalfEdge SplitEdge(HalfEdge e, Vertex v, HalfEdgeMesh halfEdgeMesh)
     {
         HalfEdge newHalfEdge = new HalfEdge(v, e.face);
         newHalfEdge.nextEdge = e.nextEdge;
         newHalfEdge.prevEdge = e;
         e.nextEdge = newHalfEdge;
-        halfEdgeMesh.edges.Add(newHalfEdge);
-        newHalfEdge.index = halfEdgeMesh.edges.Count+1;
-        v.index = halfEdgeMesh.vertices.Count+1;
-        halfEdgeMesh.vertices.Add(v);
+
+        halfEdgeMesh.Add(newHalfEdge);
+
+        return newHalfEdge;
     }
 
-    public static void setNextPrevEdge(HalfEdge startEdge, HalfEdge endEdge)
+    /// <summary>
+    /// Set previous and next for a pair of edges
+    /// </summary>
+    /// <param name="startEdge"></param>
+    /// <param name="endEdge"></param>
+    public static void SetNextPrevEdge(HalfEdge startEdge, HalfEdge endEdge)
     {
         if (startEdge == endEdge) return;
         startEdge.nextEdge = endEdge;
         endEdge.prevEdge = startEdge;
     }
 
-    public static void setNewEdgesFromSplitFace(Face f, Vertex v, HalfEdge startEdge, HalfEdgeMesh halfEdgeMesh)
+    /// <summary>
+    /// Connect and create edges in the face
+    /// </summary>
+    /// <param name="startEdge"></param>
+    /// <param name="face"></param>
+    /// <param name="facePoint"></param>
+    /// <param name="index">index of the start edge</param>
+    /// <param name="halfEdgeMesh"></param>
+    public static void ConnectEdgesToFacePoint(HalfEdge startEdge, Face face, Vertex facePoint, int index, HalfEdgeMesh halfEdgeMesh)
     {
-        HalfEdge edge1 = new HalfEdge(startEdge.nextEdge.source, f);
-        HalfEdge edge2 = new HalfEdge(v, f);
+        /*  index of the start edge:
+         *           2
+         *       __________
+         *      |          |
+         *      |          |
+         *     1|          |3      e.g. : start edge = 2 ==> we need to create edge 3 and 4
+         *      |          |
+         *      |__________|
+         *            0
+         * 
+         */
+        if (index < 0 || index >= 4) return;
 
-        setNextPrevEdge(startEdge, edge1);
-        setNextPrevEdge(edge1, edge2);
-        setNextPrevEdge(edge2, startEdge.prevEdge);
+        HalfEdge[] halfEdges = new HalfEdge[4];
 
-        halfEdgeMesh.edges.Add(edge1);
-        halfEdgeMesh.edges.Add(edge2);
+        //2 new edges after the start edge
+        halfEdges[index] = startEdge;
+        halfEdges[(index + 1) % 4] = new HalfEdge(startEdge.nextEdge.source, face);
+        halfEdges[(index + 2) % 4] = new HalfEdge(facePoint, face);
+        halfEdges[(index + 3) % 4] = startEdge.prevEdge;
 
-        edge1.index = halfEdgeMesh.edges.Count+1;
-        edge2.index = halfEdgeMesh.edges.Count+1;
+        face.edge = halfEdges[0];
 
-        halfEdgeMesh.edges.Add(edge1);
-        halfEdgeMesh.edges.Add(edge2);
+        SetNextPrevEdge(halfEdges[index], halfEdges[(index + 1) % 4]);
+        SetNextPrevEdge(halfEdges[(index + 1) % 4], halfEdges[(index + 2) % 4]);
+        SetNextPrevEdge(halfEdges[(index + 2) % 4], startEdge.prevEdge);
 
-        /*
-        edge1.nextEdge = edge2;
-        edge1.prevEdge = startEdge;
-        edge2.nextEdge = startEdge.prevEdge;
-        edge2.prevEdge = edge1;
-        startEdge.nextEdge = edge1;
-        startEdge.prevEdge.prevEdge = edge2;*/
-
+        halfEdgeMesh.Add(halfEdges[(index + 1) % 4]);
+        halfEdgeMesh.Add(halfEdges[(index + 2) % 4]);
     }
 
-    public static void splitFace(Face f1, Vertex v, HalfEdgeMesh halfEdgeMesh)
+    /// <summary>
+    /// Catmull clark subdivision surface algorithm
+    /// </summary>
+    /// <param name="mesh">mesh tto subdivide</param>
+    /// <param name="count">number of iteration</param>
+    /// <returns></returns>
+    public static Mesh Catmull_Clark(Mesh mesh, int count = 1)
     {
-        Face f2 = new Face(halfEdgeMesh.faces.Count + 1);
-        Face f3 = new Face(halfEdgeMesh.faces.Count + 2);
-        Face f4 = new Face(halfEdgeMesh.faces.Count + 3);
-
-        HalfEdge startEdge1 = f1.edge;
-        HalfEdge startEdge2 = f1.edge.nextEdge.nextEdge;
-        HalfEdge startEdge3 = startEdge2.nextEdge.nextEdge;
-        HalfEdge startEdge4 = startEdge3.nextEdge.nextEdge;
-
-        f2.edge = startEdge2;
-        f3.edge = startEdge3;
-        f4.edge = startEdge4;
-
-        v.index = halfEdgeMesh.vertices.Count+1;
-        halfEdgeMesh.vertices.Add(v);
-
-        setNewEdgesFromSplitFace(f1, v, startEdge1, halfEdgeMesh);
-        setNewEdgesFromSplitFace(f2, v, startEdge2, halfEdgeMesh);
-        setNewEdgesFromSplitFace(f3, v, startEdge3, halfEdgeMesh);
-        setNewEdgesFromSplitFace(f4, v, startEdge4, halfEdgeMesh);
-
-        halfEdgeMesh.faces.Add(f2);
-        halfEdgeMesh.faces.Add(f3);
-        halfEdgeMesh.faces.Add(f4);
-    }
-
-    public static Mesh Catmull_Clark(Mesh mesh)
-    {
-        HalfEdgeMesh halfEdgeMesh = VertexFaceToHalfEdge(mesh);
-        Catmull_Clark(halfEdgeMesh);
-        Mesh newMesh = HalfEdgeToVertexFace(halfEdgeMesh);
+        Mesh newMesh = mesh;
+        for (int i = 0; i < count; i++)
+        {
+            HalfEdgeMesh halfEdgeMesh = VertexFaceToHalfEdge(newMesh);
+            Subdivide(halfEdgeMesh);
+            newMesh = HalfEdgeToVertexFace(halfEdgeMesh);
+        }
         return newMesh;
     }
 
-    public static void Catmull_Clark(HalfEdgeMesh halfEdgeMesh)
+    /// <summary>
+    /// Subdivision algorithm
+    /// </summary>
+    /// <param name="halfEdgeMesh"></param>
+    public static void Subdivide(HalfEdgeMesh halfEdgeMesh)
     {
+        //get faces / edges / vertices
         List<Face> faces = halfEdgeMesh.faces;
         List<HalfEdge> halfEdges = halfEdgeMesh.edges;
         List<Vertex> vertices = halfEdgeMesh.vertices;
 
+        //List of new points
         List<Vertex> facePoints = new List<Vertex>();
         List<Vertex> edgePoints = new List<Vertex>();
 
-        foreach(Face face in faces)
+
+        //Compute new vertex poisition
+        for (int i = 0; i < vertices.Count; i++)
         {
-            facePoints.Add(facePoint(face));
+            vertices[i] = VertexPoint(vertices[i], halfEdgeMesh);
         }
 
-        foreach(HalfEdge halfEdge in halfEdges)
+
+        //Compute face points
+        foreach (Face face in faces)
         {
-            edgePoints.Add(edgePoint(halfEdge));
+            Vertex facePoint = FacePoint(face);
+            halfEdgeMesh.Add(facePoint);
+            facePoints.Add(facePoint);
         }
 
-        for(int i=0; i< vertices.Count; i++)
+        //compute edge points
+        foreach (HalfEdge halfEdge in halfEdges)
         {
-            vertices[i] = vertexPoint(vertices[i], halfEdgeMesh);
-        }
-        int halfEdgesCount = halfEdges.Count;
-        for(int i=0; i< halfEdgesCount; i++)
-        {
-            splitEdge(halfEdges[i], edgePoints[i], halfEdgeMesh); //count
+            Vertex edgePoint = EdgePoint(halfEdge);
+            halfEdgeMesh.Add(edgePoint);
+            edgePoints.Add(edgePoint);
         }
 
-        int facesCount = faces.Count;
-        for(int i = 0; i < facesCount; i++)
-        {
-            splitFace(faces[i], facePoints[i], halfEdgeMesh); //count
-        }
 
-        halfEdgeMesh.setTwinEdges();
+        //for each face:
+        //create new faces from face point
+        //split every edges in 2 (old edge to edge point and new edge to old edge end point)
+        //connect face point to edge point
+        int faceCount = faces.Count;
+        for (int i = 0; i < faceCount; i++)
+        {
+            //get all edges in the face
+            HalfEdge halfEdge1 = faces[i].edge;
+            HalfEdge halfEdge2 = faces[i].edge.nextEdge;
+            HalfEdge halfEdge3 = faces[i].edge.nextEdge.nextEdge;
+            HalfEdge halfEdge4 = faces[i].edge.nextEdge.nextEdge.nextEdge;
+
+            //create 3 new faces
+            Face f1 = faces[i];
+            Face f2 = new Face(halfEdgeMesh.faces.Count);
+            Face f3 = new Face(halfEdgeMesh.faces.Count + 1);
+            Face f4 = new Face(halfEdgeMesh.faces.Count + 2);
+
+            halfEdgeMesh.Add(f2);
+            halfEdgeMesh.Add(f3);
+            halfEdgeMesh.Add(f4);
+
+            //Split every edges in 2
+            HalfEdge halfEdgeFace2 = SplitEdge(halfEdge1, edgePoints[halfEdge1.index], halfEdgeMesh);
+            HalfEdge halfEdgeFace3 = SplitEdge(halfEdge2, edgePoints[halfEdge2.index], halfEdgeMesh);
+            HalfEdge halfEdgeFace4 = SplitEdge(halfEdge3, edgePoints[halfEdge3.index], halfEdgeMesh);
+            HalfEdge halfEdgeFace1 = SplitEdge(halfEdge4, edgePoints[halfEdge4.index], halfEdgeMesh);
+
+            halfEdge1.prevEdge = halfEdgeFace1;
+            halfEdge2.prevEdge = halfEdgeFace2;
+            halfEdge3.prevEdge = halfEdgeFace3;
+            halfEdge4.prevEdge = halfEdgeFace4;
+
+            //set "bottom" edge in respective face
+            halfEdgeFace1.face = f1;
+            halfEdgeFace2.face = f2;
+            halfEdgeFace3.face = f3;
+            halfEdgeFace4.face = f4;
+
+            halfEdge2.face = f2;
+            halfEdge3.face = f3;
+            halfEdge4.face = f4;
+
+            Vertex facePoint = facePoints[faces[i].index];
+
+            //connect new edges
+            ConnectEdgesToFacePoint(halfEdge1, f1, facePoint, 0, halfEdgeMesh);
+            ConnectEdgesToFacePoint(halfEdge2, f2, facePoint, 1, halfEdgeMesh);
+            ConnectEdgesToFacePoint(halfEdge3, f3, facePoint, 2, halfEdgeMesh);
+            ConnectEdgesToFacePoint(halfEdge4, f4, facePoint, 3, halfEdgeMesh);
+        }
     }
 }
