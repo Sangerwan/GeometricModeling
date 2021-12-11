@@ -6,7 +6,7 @@ using static GeometricClass;
 using static GeometricServices;
 public class TestManager : MonoBehaviour
 {
-    [Header("Objects")]    
+    [Header("Objects")]
     [SerializeField] GameObject Plane;
     [SerializeField] GameObject Sphere;
     [SerializeField] GameObject Cylinder;
@@ -27,8 +27,8 @@ public class TestManager : MonoBehaviour
     [SerializeField] float Size_Intersect_Points;
     [SerializeField] Color Color_Intersect_Sphere;
     [SerializeField] Color Color_Intersect_Cylinder;
-    [SerializeField] Color Color_Intersect_Plane;    
-    
+    [SerializeField] Color Color_Intersect_Plane;
+
     void OnDrawGizmos()
     {
         #region Segment
@@ -51,12 +51,12 @@ public class TestManager : MonoBehaviour
 
             Gizmos.color = Color_Segment_AB;
             Gizmos.DrawLine(posA, posB);
-            
+
         }
         #endregion
 
         #region Plane
-        {            
+        {
             Vector3 interpt;
             Vector3 interNormal;
             Segment segment = new Segment { pt1 = PointA.transform.position, pt2 = PointB.transform.position };
@@ -77,12 +77,12 @@ public class TestManager : MonoBehaviour
             Vector3 interpt;
             Vector3 interNormal;
             Segment segment = new Segment { pt1 = PointA.transform.position, pt2 = PointB.transform.position };
-            GeometricClass.Cylinder cylinder = new GeometricClass.Cylinder { pt1= Cylinder.transform.position, pt2 = Cylinder.transform.position + Cylinder.transform.up, radius = Cylinder.transform.localScale.x/2};
+            GeometricClass.Cylinder cylinder = new GeometricClass.Cylinder { pt1 = Cylinder.transform.position, pt2 = Cylinder.transform.position + Cylinder.transform.up, radius = Cylinder.transform.localScale.x / 2 };
             if (InterSegmentCylinder(segment, cylinder, out interpt, out interNormal))
             {
                 Gizmos.color = Color_Intersect_Cylinder;
                 Gizmos.DrawSphere(interpt, Size_Intersect_Points);
-                Gizmos.color = Color_Normals;                 
+                Gizmos.color = Color_Normals;
                 Gizmos.DrawLine(interpt, interpt + interNormal * Size_normals);
             }
         }
@@ -93,12 +93,12 @@ public class TestManager : MonoBehaviour
             Vector3 interpt;
             Vector3 interNormal;
             Segment segment = new Segment { pt1 = PointA.transform.position, pt2 = PointB.transform.position };
-            GeometricClass.Sphere sphere = new GeometricClass.Sphere { center = Sphere.transform.position, radius = Sphere.transform.localScale.x/2 };
+            GeometricClass.Sphere sphere = new GeometricClass.Sphere { center = Sphere.transform.position, radius = Sphere.transform.localScale.x / 2 };
             if (InterSegmentSphere(segment, sphere, out interpt, out interNormal))
             {
                 Gizmos.color = Color_Intersect_Sphere;
                 Gizmos.DrawSphere(interpt, Size_Intersect_Points);
-                Gizmos.color = Color_Normals;                
+                Gizmos.color = Color_Normals;
                 Gizmos.DrawLine(interpt, interpt + interNormal * Size_normals);
             }
         }

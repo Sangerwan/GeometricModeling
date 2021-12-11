@@ -80,11 +80,11 @@ public class CatmullClark : MonoBehaviour
 
         int[] quads;
         Vector3[] vertices = mesh.vertices;
-        TrianglesToQuads(mesh, out quads);     
+        TrianglesToQuads(mesh, out quads);
 
-        for(int i =0; i < vertices.Length; i++)
+        for (int i = 0; i < vertices.Length; i++)
         {
-            halfEdgeMesh.vertices.Add(new Vertex(vertices[i],i));
+            halfEdgeMesh.vertices.Add(new Vertex(vertices[i], i));
         }
 
         //store neighbours faces 
@@ -104,7 +104,7 @@ public class CatmullClark : MonoBehaviour
             HalfEdge halfEdge3 = new HalfEdge(index + 2, vertex3);
             HalfEdge halfEdge4 = new HalfEdge(index + 3, vertex4);
 
-            Face face = new Face(index/4);
+            Face face = new Face(index / 4);
             face.edge = halfEdge1;
             halfEdgeMesh.faces.Add(face);
 
@@ -151,7 +151,7 @@ public class CatmullClark : MonoBehaviour
         return halfEdgeMesh;
 
     }
-    
+
     public static Mesh HalfEdgeToVertexFace(HalfEdgeMesh halfEdgeMesh)
     {
         Mesh newMesh = new Mesh();
@@ -159,7 +159,7 @@ public class CatmullClark : MonoBehaviour
         List<Vector3> vertices = halfEdgeMesh.vertices.ConvertAll(x => x.position);
         List<int> quads = new List<int>();
 
-        foreach( var face in halfEdgeMesh.faces)
+        foreach (var face in halfEdgeMesh.faces)
         {
             quads.Add(face.edge.source.index);
             quads.Add(face.edge.nextEdge.source.index);
@@ -179,7 +179,7 @@ public class CatmullClark : MonoBehaviour
     {
         Vector3 vertex1 = f.edge.source.position;
         Vector3 vertex2 = f.edge.nextEdge.source.position;
-        Vector3 vertex3 = f.edge.nextEdge.nextEdge.source.position;   
+        Vector3 vertex3 = f.edge.nextEdge.nextEdge.source.position;
         Vector3 vertex4 = f.edge.nextEdge.nextEdge.nextEdge.source.position;
         Vector3 result = (vertex1 + vertex2 + vertex3 + vertex4);
         result /= 4;
@@ -193,9 +193,6 @@ public class CatmullClark : MonoBehaviour
         Vertex result;
         if (edge.twinEdge != null)
         {
-            Face face1 = edge.face;
-            Face face2 = edge.twinEdge.face;            
-
             Vertex vertex3 = FacePoint(edge.face);
             Vertex vertex4 = FacePoint(edge.twinEdge.face);
             result = new Vertex((vertex1.position + vertex2.position + vertex3.position + vertex4.position) / 4);
@@ -215,7 +212,7 @@ public class CatmullClark : MonoBehaviour
         halfEdgeMesh.GetNeighboursFacesEdges(v, out faces, out edges);
 
         int n = edges.Length;
-        if(n >= 3)
+        if (n >= 3)
         {
             Vector3 Q = new Vector3();
             Vector3 R = new Vector3();
@@ -227,10 +224,10 @@ public class CatmullClark : MonoBehaviour
 
             for (int i = 0; i < edges.Length; i++)
             {
-                R += (edges[i].source.position + edges[i].nextEdge.source.position)/2;
+                R += (edges[i].source.position + edges[i].nextEdge.source.position) / 2;
             }
             R /= edges.Length;
-            return new Vertex( Q / n + 2 * R / n + (n - 3) * v.position / n , v.index);
+            return new Vertex(Q / n + 2 * R / n + (n - 3) * v.position / n, v.index);
         }
         else //boundary
         {
@@ -309,6 +306,7 @@ public class CatmullClark : MonoBehaviour
         halfEdgeMesh.Add(halfEdges[(index + 1) % 4]);
         halfEdgeMesh.Add(halfEdges[(index + 2) % 4]);
     }
+
     /// <summary>
     /// Catmull clark subdivision surface algorithm
     /// </summary>
@@ -359,20 +357,20 @@ public class CatmullClark : MonoBehaviour
         }
 
         //compute edge points
-        foreach(HalfEdge halfEdge in halfEdges)
+        foreach (HalfEdge halfEdge in halfEdges)
         {
             Vertex edgePoint = EdgePoint(halfEdge);
             halfEdgeMesh.Add(edgePoint);
             edgePoints.Add(edgePoint);
         }
 
-        
+
         //for each face:
         //create new faces from face point
         //split every edges in 2 (old edge to edge point and new edge to old edge end point)
         //connect face point to edge point
         int faceCount = faces.Count;
-        for(int i=0; i< faceCount; i++)
+        for (int i = 0; i < faceCount; i++)
         {
             //get all edges in the face
             HalfEdge halfEdge1 = faces[i].edge;
@@ -394,7 +392,7 @@ public class CatmullClark : MonoBehaviour
             HalfEdge halfEdgeFace2 = SplitEdge(halfEdge1, edgePoints[halfEdge1.index], halfEdgeMesh);
             HalfEdge halfEdgeFace3 = SplitEdge(halfEdge2, edgePoints[halfEdge2.index], halfEdgeMesh);
             HalfEdge halfEdgeFace4 = SplitEdge(halfEdge3, edgePoints[halfEdge3.index], halfEdgeMesh);
-            HalfEdge halfEdgeFace1 = SplitEdge(halfEdge4, edgePoints[halfEdge4.index], halfEdgeMesh);            
+            HalfEdge halfEdgeFace1 = SplitEdge(halfEdge4, edgePoints[halfEdge4.index], halfEdgeMesh);
 
             halfEdge1.prevEdge = halfEdgeFace1;
             halfEdge2.prevEdge = halfEdgeFace2;

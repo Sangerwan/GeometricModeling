@@ -40,10 +40,10 @@ public class HalfEdge
     public HalfEdge(Vertex v, Face f)
     {
         this.source = v;
-        this.face = f; 
+        this.face = f;
     }
 
-    public HalfEdge(int i, Vertex source, HalfEdge prev=null, HalfEdge next = null, HalfEdge twin = null, Face face = null)
+    public HalfEdge(int i, Vertex source, HalfEdge prev = null, HalfEdge next = null, HalfEdge twin = null, Face face = null)
     {
         this.index = i;
         this.source = source;
@@ -79,7 +79,7 @@ public class HalfEdgeMesh
         v.index = vertices.Count;
         vertices.Add(v);
     }
-    
+
     public void Add(Face f)
     {
         f.index = faces.Count;
@@ -93,10 +93,10 @@ public class HalfEdgeMesh
         {
             if (foundEdges.Contains(edge)) continue;
 
-            foreach(var face in neighboursFaces[edge.source.position])
+            foreach (var face in neighboursFaces[edge.source.position])
             {
                 HalfEdge twinEdge = face.edge;
-                for(int i = 0; i<4; i++)
+                for (int i = 0; i < 4; i++)
                 {
                     if (!(foundEdges.Contains(edge) || Equals(twinEdge, edge)))
                     {
@@ -120,7 +120,7 @@ public class HalfEdgeMesh
     }
 
     public Face[] GetNeighboursFaces(Vertex v)
-    { 
+    {
         return neighboursFaces[v.position].ToArray();
     }
 
@@ -132,7 +132,7 @@ public class HalfEdgeMesh
             HalfEdge edge = face.edge;
             for (int i = 0; i < 4; i++)
             {
-                if(edge.source.position == v.position)
+                if (edge.source.position == v.position)
                     edges.Add(edge);
                 edge = edge.nextEdge;
             }

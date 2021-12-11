@@ -9,15 +9,15 @@ public class MeshGenerator : MonoBehaviour
     private void Awake()
     {
         m_Mf = GetComponent<MeshFilter>();
-        //m_Mf.sharedMesh = CreateTriangle();
+        //Mesh mesh = CreateTriangle();
         //Mesh mesh = CreateQuadXZ(new Vector3(4,0,2));
-        //m_Mf.sharedMesh = CreateStripXZ(new Vector3(4, 0, 2),200);
+        //Mesh mesh = CreateStripXZ(new Vector3(4, 0, 2),200);
 
-        //m_Mf.sharedMesh = CreatePlaneXZ(new Vector3(4, 0, 2), 20,10);
-        //m_Mf.sharedMesh = CreateQuadXZ(new Vector3(4, 0, 2));
-        //m_Mf.sharedMesh = WrapNormalizePlane( 20, 10, (kX,kZ)=>new Vector3((kX-0.5f)*4,0,(kZ-0.5f)*2) );
+        //Mesh mesh = CreatePlaneXZ(new Vector3(4, 0, 2), 20,10);
+        //Mesh mesh = CreateQuadXZ(new Vector3(4, 0, 2));
+        //Mesh mesh = WrapNormalizePlane( 20, 10, (kX,kZ)=>new Vector3((kX-0.5f)*4,0,(kZ-0.5f)*2) );
         /*
-        m_Mf.sharedMesh = WrapNormalizePlane(20, 100,
+        Mesh mesh = WrapNormalizePlane(20, 100,
         (kX, kZ) =>{
         float rho = 2*(1+.25f*Mathf.Sin(kZ*Mathf.PI*2*4));
         float theta = kX * 2 * Mathf.PI;
@@ -27,7 +27,7 @@ public class MeshGenerator : MonoBehaviour
         );*/
 
 
-        //m_Mf.sharedMesh = 
+        //Mesh mesh = 
         //    WrapNormalizePlane(200, 100,
         //        (kX, kZ) =>
         //        {
@@ -40,7 +40,7 @@ public class MeshGenerator : MonoBehaviour
 
 
 
-        //m_Mf.sharedMesh = WrapNormalizePlaneQuads(20, 10, (kX, kZ) => new Vector3( (kX - 0.5f) * 4, Mathf.Sin(kX * Mathf.PI * 2 * 3), (kZ - .5f) * 2));
+        //Mesh mesh = WrapNormalizePlaneQuads(20, 10, (kX, kZ) => new Vector3( (kX - 0.5f) * 4, Mathf.Sin(kX * Mathf.PI * 2 * 3), (kZ - .5f) * 2));
         Mesh mesh = WrapNormalizePlaneQuads(20, 10, (kX, kZ) =>
         {
             float rho = 2;
@@ -51,10 +51,6 @@ public class MeshGenerator : MonoBehaviour
             //return new Vector3(rho * Mathf.Cos(theta), rho * Mathf.Cos(phi), rho * Mathf.Sin(theta) * Mathf.Sin(phi));
         });
         //m_Mf.sharedMesh = CreateStripXZQuads(new Vector3(4, 0, 2), 5);
-        //Mesh mesh = CreateRegularPolygonXZQuads(100, 4);
-        //Debug.Log(MeshDisplayInfo2.ExportMeshCSV(mesh));
-        //Mesh catmull_Mesh = CatmullClark.Catmull_Clark(mesh);
-        //Debug.Log(MeshDisplayInfo2.ExportMeshCSV(catmull_Mesh));
 
         m_Mf.sharedMesh = mesh;
         gameObject.AddComponent<MeshCollider>();
@@ -331,11 +327,11 @@ public class MeshGenerator : MonoBehaviour
 
         Vector3[] points = new Vector3[nQuads];
         //Points
-        for (int i = 0; i< nQuads; i++)
+        for (int i = 0; i < nQuads; i++)
         {
             float x = Mathf.Sin(((float)i / nQuads) * 2 * Mathf.PI);
-            float z = Mathf.Cos(((float)i / nQuads) * 2 * Mathf.PI);         
-            points[i] = new Vector3(x,0,z);
+            float z = Mathf.Cos(((float)i / nQuads) * 2 * Mathf.PI);
+            points[i] = new Vector3(x, 0, z);
         }
 
 
@@ -344,7 +340,7 @@ public class MeshGenerator : MonoBehaviour
         for (int i = 0; i < nQuads; i++)
         {
             vertices[index++] = points[i];
-            int idx = (i + 1) % nQuads ;
+            int idx = (i + 1) % nQuads;
             Vector3 a = points[i];
             Vector3 b = points[idx];
             Vector3 c = (a + b) / 2;

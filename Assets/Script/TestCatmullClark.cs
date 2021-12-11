@@ -12,16 +12,18 @@ public class TestCatmullClark : MonoBehaviour
     void Start()
     {
         m_Mf = GetComponent<MeshFilter>();
+
         if (nb_iterations == 0)
-        {                  
-            m_Mf.sharedMesh = CatmullClark.HalfEdgeToVertexFace(CatmullClark.VertexFaceToHalfEdge(m_Mf.sharedMesh));
-            Debug.Log("Mesh");
-        }
-        if(nb_iterations != 0)
         {
-            m_Mf.sharedMesh = CatmullClark.Catmull_Clark(m_Mf.sharedMesh, nb_iterations);
-            Debug.Log("Catmull");
+            Debug.Log("Mesh");
+            m_Mf.sharedMesh = CatmullClark.HalfEdgeToVertexFace(CatmullClark.VertexFaceToHalfEdge(m_Mf.sharedMesh));
         }
+        if (nb_iterations != 0)
+        {
+            Debug.Log("Catmull " + nb_iterations);
+            m_Mf.sharedMesh = CatmullClark.Catmull_Clark(m_Mf.sharedMesh, nb_iterations);
+        }
+        m_Mf.sharedMesh.name = gameObject.name + "Catmull Clark x" + nb_iterations;
         Debug.Log(MeshDisplayInfo.ExportMeshCSV(m_Mf.sharedMesh));
     }
 }
