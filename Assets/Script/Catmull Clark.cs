@@ -87,8 +87,8 @@ public class CatmullClark : MonoBehaviour
             halfEdgeMesh.vertices.Add(new Vertex(vertices[i], i));
         }
 
-        //store neighbours faces 
-        Dictionary<Vector3, List<Face>> neighboursFaces = new Dictionary<Vector3, List<Face>>();
+        //store neighbors faces 
+        Dictionary<Vector3, List<Face>> neighborsFaces = new Dictionary<Vector3, List<Face>>();
 
         int index = 0;
 
@@ -128,25 +128,25 @@ public class CatmullClark : MonoBehaviour
             halfEdgeMesh.edges.Add(halfEdge3);
             halfEdgeMesh.edges.Add(halfEdge4);
 
-            if (!neighboursFaces.ContainsKey(halfEdge1.source.position))
-                neighboursFaces.Add(halfEdge1.source.position, new List<Face>());
-            neighboursFaces[halfEdge1.source.position].Add(face);
+            if (!neighborsFaces.ContainsKey(halfEdge1.source.position))
+                neighborsFaces.Add(halfEdge1.source.position, new List<Face>());
+            neighborsFaces[halfEdge1.source.position].Add(face);
 
-            if (!neighboursFaces.ContainsKey(halfEdge2.source.position))
-                neighboursFaces.Add(halfEdge2.source.position, new List<Face>());
-            neighboursFaces[halfEdge2.source.position].Add(face);
+            if (!neighborsFaces.ContainsKey(halfEdge2.source.position))
+                neighborsFaces.Add(halfEdge2.source.position, new List<Face>());
+            neighborsFaces[halfEdge2.source.position].Add(face);
 
-            if (!neighboursFaces.ContainsKey(halfEdge3.source.position))
-                neighboursFaces.Add(halfEdge3.source.position, new List<Face>());
-            neighboursFaces[halfEdge3.source.position].Add(face);
+            if (!neighborsFaces.ContainsKey(halfEdge3.source.position))
+                neighborsFaces.Add(halfEdge3.source.position, new List<Face>());
+            neighborsFaces[halfEdge3.source.position].Add(face);
 
-            if (!neighboursFaces.ContainsKey(halfEdge4.source.position))
-                neighboursFaces.Add(halfEdge4.source.position, new List<Face>());
-            neighboursFaces[halfEdge4.source.position].Add(face);
+            if (!neighborsFaces.ContainsKey(halfEdge4.source.position))
+                neighborsFaces.Add(halfEdge4.source.position, new List<Face>());
+            neighborsFaces[halfEdge4.source.position].Add(face);
 
             index += 4;
         }
-        halfEdgeMesh.neighboursFaces = neighboursFaces;
+        halfEdgeMesh.neighborsFaces = neighborsFaces;
         halfEdgeMesh.SetTwinEdges();
         return halfEdgeMesh;
 
@@ -209,13 +209,14 @@ public class CatmullClark : MonoBehaviour
         Face[] faces;
         HalfEdge[] edges;
 
-        halfEdgeMesh.GetNeighboursFacesEdges(v, out faces, out edges);
+        halfEdgeMesh.GetNeighborsFacesEdges(v, out faces, out edges);
 
         int n = edges.Length;
         if (n >= 3)
         {
             Vector3 Q = new Vector3();
             Vector3 R = new Vector3();
+
             for (int i = 0; i < faces.Length; i++)
             {
                 Q += FacePoint(faces[i]).position;
@@ -227,6 +228,7 @@ public class CatmullClark : MonoBehaviour
                 R += (edges[i].source.position + edges[i].nextEdge.source.position) / 2;
             }
             R /= edges.Length;
+
             return new Vertex(Q / n + 2 * R / n + (n - 3) * v.position / n, v.index);
         }
         else //boundary
@@ -415,6 +417,6 @@ public class CatmullClark : MonoBehaviour
             ConnectEdgesToFacePoint(halfEdge3, f3, facePoint, 2, halfEdgeMesh);
             ConnectEdgesToFacePoint(halfEdge4, f4, facePoint, 3, halfEdgeMesh);
         }
-        halfEdgeMesh.neighboursFaces = null;
+        halfEdgeMesh.neighborsFaces = null;
     }
 }

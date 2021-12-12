@@ -63,7 +63,7 @@ public class HalfEdgeMesh
     public List<Vertex> vertices = new List<Vertex>();
     public List<HalfEdge> edges = new List<HalfEdge>();
     public List<Face> faces = new List<Face>();
-    public Dictionary<Vector3, List<Face>> neighboursFaces = new Dictionary<Vector3, List<Face>>();
+    public Dictionary<Vector3, List<Face>> neighborsFaces = new Dictionary<Vector3, List<Face>>();
     public bool hasNormal() { return true; }
 
     public bool hasUV() { return true; }
@@ -93,7 +93,7 @@ public class HalfEdgeMesh
         {
             if (foundEdges.Contains(edge)) continue;
 
-            foreach (var face in neighboursFaces[edge.source.position])
+            foreach (var face in neighborsFaces[edge.source.position])
             {
                 HalfEdge twinEdge = face.edge;
                 for (int i = 0; i < 4; i++)
@@ -119,15 +119,15 @@ public class HalfEdgeMesh
         }
     }
 
-    public Face[] GetNeighboursFaces(Vertex v)
+    public Face[] GetNeighborsFaces(Vertex v)
     {
-        return neighboursFaces[v.position].ToArray();
+        return neighborsFaces[v.position].ToArray();
     }
 
-    public HalfEdge[] GetNeighboursEdges(Vertex v)
+    public HalfEdge[] GetNeighborsEdges(Vertex v)
     {
         List<HalfEdge> edges = new List<HalfEdge>();
-        foreach (var face in neighboursFaces[v.position])
+        foreach (var face in neighborsFaces[v.position])
         {
             HalfEdge edge = face.edge;
             for (int i = 0; i < 4; i++)
@@ -140,10 +140,10 @@ public class HalfEdgeMesh
         return edges.ToArray();
     }
 
-    public void GetNeighboursFacesEdges(Vertex v, out Face[] faces, out HalfEdge[] edges)
+    public void GetNeighborsFacesEdges(Vertex v, out Face[] faces, out HalfEdge[] edges)
     {
-        faces = GetNeighboursFaces(v);
-        edges = GetNeighboursEdges(v);
+        faces = GetNeighborsFaces(v);
+        edges = GetNeighborsEdges(v);
     }
 
 }
