@@ -99,28 +99,6 @@ public static class GeometricServices
         Vector3 PQ = cylinder.pt2 - cylinder.pt1;
         Vector3 u = PQ / PQ.magnitude;
 
-        float a1 =
-            Vector3.Dot(AB, AB)
-            + (Vector3.Dot(AB, PQ) / PQ.magnitude)
-            * (
-                -2 * Vector3.Dot(AB, u)
-                + (Vector3.Dot(AB, PQ) / PQ.magnitude) * Vector3.Dot(u, u)
-            );
-
-        float b1 =
-            2f *
-            (
-                Vector3.Dot(AB, PA)
-                - Vector3.Dot(PA, (Vector3.Dot(AB, PQ) / PQ.magnitude) * u)
-                - Vector3.Dot(AB, (Vector3.Dot(PA, PQ) / PQ.magnitude) * u)
-            );
-
-        float c1 =
-            Vector3.Dot(PA, PA)
-            - 2f * Vector3.Dot(PA, (Vector3.Dot(PA, PQ) / PQ.magnitude) * u)
-            + (Vector3.Dot(PA, PQ) / PQ.magnitude) * (Vector3.Dot(PA, PQ) / PQ.magnitude) * Vector3.Dot(u, u)
-            - cylinder.radius * cylinder.radius;
-
         float a = Vector3.Dot(AB, AB) - 2 * Vector3.Dot(AB, Vector3.Dot(AB, PQ) / PQ.magnitude * u) + Mathf.Pow(Vector3.Dot(AB, PQ) / PQ.magnitude, 2) * Vector3.Dot(u, u);
         float b = 2 * Vector3.Dot(AB, PA) - 4 * Vector3.Dot(AB, Vector3.Dot(PA, PQ) / PQ.magnitude * u) + 2 * Vector3.Dot(AB, PQ) * Vector3.Dot(PA, PQ) / Mathf.Pow(PQ.magnitude, 2) * Vector3.Dot(u, u);
         float c = Vector3.Dot(PA, PA) - 2 * Vector3.Dot(PA, Vector3.Dot(PA, PQ) / PQ.magnitude * u) + Mathf.Pow(Vector3.Dot(PA, PQ) / PQ.magnitude, 2) * Vector3.Dot(u, u) - Mathf.Pow(cylinder.radius, 2);

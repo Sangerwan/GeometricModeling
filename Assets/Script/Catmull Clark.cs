@@ -347,7 +347,6 @@ public class CatmullClark : MonoBehaviour
             vertices[i] = VertexPoint(vertices[i], halfEdgeMesh);
         }
 
-
         //Compute face points
         foreach (Face face in faces)
         {
@@ -363,7 +362,6 @@ public class CatmullClark : MonoBehaviour
             halfEdgeMesh.Add(edgePoint);
             edgePoints.Add(edgePoint);
         }
-
 
         //for each face:
         //create new faces from face point
@@ -417,5 +415,6 @@ public class CatmullClark : MonoBehaviour
             ConnectEdgesToFacePoint(halfEdge3, f3, facePoint, 2, halfEdgeMesh);
             ConnectEdgesToFacePoint(halfEdge4, f4, facePoint, 3, halfEdgeMesh);
         }
+        halfEdgeMesh.neighboursFaces = null;
     }
 }
