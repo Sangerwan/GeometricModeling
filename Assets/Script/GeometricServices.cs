@@ -51,11 +51,9 @@ public static class GeometricServices
     {
         interpt = new Vector3();
         interNormal = new Vector3();
-        //1
 
         Vector3 AB = segment.pt2 - segment.pt1;
         Vector3 OA = segment.pt1 - sphere.center;
-
 
         float a = Vector3.Dot(AB, AB);
         float b = 2f * Vector3.Dot(OA, AB);
