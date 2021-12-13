@@ -12,12 +12,20 @@ public class TestManager : MonoBehaviour
     [SerializeField] GameObject Cylinder;
     [SerializeField] GameObject PointA;
     [SerializeField] GameObject PointB;
+    [SerializeField] GameObject PointC;
 
-    [Header("Points (A,B)")]
+    [Header("Segment (A,B)")]
     [SerializeField] float Size_Point_AB;
-    [SerializeField] Color Color_PointA;
-    [SerializeField] Color Color_PointB;
+    [SerializeField] Color Color_Point_A;
+    [SerializeField] Color Color_Point_B;
     [SerializeField] Color Color_Segment_AB;
+    [SerializeField] Color Color_Line_AB;
+
+    [Header("Point C")]
+    [SerializeField] float Size_Point_C;
+    [SerializeField] Color Color_Point_C;
+    [SerializeField] Color Color_Segment_C_To_Plane;
+    [SerializeField] Color Color_Segment_C_To_Segment_AB;
 
     [Header("Normals")]
     [SerializeField] float Size_normals;
@@ -39,21 +47,92 @@ public class TestManager : MonoBehaviour
             Vector3 posA = PointA.transform.position;
             Vector3 posB = PointB.transform.position;
 
-            Gizmos.color = Color_PointA;
-            myStyle.normal.textColor = Color_PointA;
+            Gizmos.color = Color_Point_A;
+            myStyle.normal.textColor = Color_Point_A;
             Gizmos.DrawSphere(posA, Size_Point_AB);
             Handles.Label(posA, "A", myStyle);
 
-            Gizmos.color = Color_PointB;
-            myStyle.normal.textColor = Color_PointB;
+            Gizmos.color = Color_Point_B;
+            myStyle.normal.textColor = Color_Point_B;
             Gizmos.DrawSphere(posB, Size_Point_AB);
             Handles.Label(posB, "B", myStyle);
 
             Gizmos.color = Color_Segment_AB;
             Gizmos.DrawLine(posA, posB);
 
+            Gizmos.color = Color_Line_AB;
+            Gizmos.DrawRay(posA, posB - posA);
+            Gizmos.DrawRay(posA, posA - posB);
+
         }
         #endregion
+
+        #region Point C
+        {
+            GUIStyle myStyle = new GUIStyle();
+            myStyle.fontSize = 16;
+
+            Vector3 posC = PointC.transform.position;
+
+            Gizmos.color = Color_Point_C;
+            myStyle.normal.textColor = Color_Point_A;
+            Gizmos.DrawSphere(posC, Size_Point_C);
+            Handles.Label(posC, "C", myStyle);
+
+            #region Distance Plane
+            {
+                Gizmos.color = Color_Segment_C_To_Plane;
+                myStyle.normal.textColor = Color_Segment_C_To_Plane;
+                Vector3 normalPlane = Plane.transform.up;
+                Vector3 OC = posC - Plane.transform.position;
+
+                float distance = Vector3.Dot(normalPlane, OC);
+
+                Vector3 u = Plane.transform.right / Plane.transform.forward.magnitude;
+                Vector3 v = Plane.transform.forward / Plane.transform.forward.magnitude;
+
+                Vector3 OH = Vector3.Dot(posC, u) * u + Vector3.Dot(posC, v) * v + Plane.transform.position.y * normalPlane;
+
+                Gizmos.DrawSphere(OH, Size_Point_C);
+                Handles.Label(OH, "H", myStyle);
+
+                Gizmos.DrawLine(OH, posC);
+                Handles.Label((OH + posC) / 2, distance.ToString(), myStyle);
+            }
+            #endregion
+
+            #region Distance Segment AB
+            {
+                Gizmos.color = Color_Segment_C_To_Segment_AB;
+                myStyle.normal.textColor = Color_Segment_C_To_Segment_AB;
+
+                Vector3 AB = PointB.transform.position - PointA.transform.position;
+                Vector3 AC = PointC.transform.position - PointA.transform.position;                
+                
+                Vector3 u = AB / AB.magnitude;
+
+                Vector3 H = Vector3.Dot(AC, u) * u + PointA.transform.position;
+
+                float distance = Vector3.Cross(AC, u).magnitude;
+
+                Gizmos.DrawSphere(H, Size_Point_C);
+                Handles.Label(H, "H", myStyle);
+
+                Gizmos.DrawLine(H, posC);
+                Handles.Label((H + posC) / 2, distance.ToString(), myStyle);
+            }
+            #endregion
+
+
+            //myStyle.normal.textColor = Color_Point_B;
+            //Gizmos.DrawSphere(posB, Size_Point_AB);
+            //Handles.Label(posB, "B", myStyle);
+
+            //Gizmos.color = Color_Segment_AB;
+            //Gizmos.DrawLine(posA, posB);
+        }
+        #endregion
+
 
         #region Plane
         {

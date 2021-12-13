@@ -42,7 +42,7 @@ public class CatmullClark : MonoBehaviour
          *Pseudo Code
          *  1) création des nouveaux points : facePoints et edgePoints
          *      Rajouter dans les structure edge/ face les facepoints et edgePoints
-         *  2) updtae de la position des vertices (vertex points)
+         *  2) update de la position des vertices (vertex points)
          *  3) split des edges en y insérant l'edge point
          *      conserver l'edge avant split et modifier une de ses positions + insérer les nouvelles edges (perfo)
          *      methode SplitEdge(Edge, vertex)
@@ -204,13 +204,46 @@ public class CatmullClark : MonoBehaviour
         return result;
     }
 
+    public static Face[] GetNeighborsFaces(Vertex v, HalfEdgeMesh halfEdgeMesh)
+    {
+        List<Face> faces = new List<Face>();
+        foreach (var edges in halfEdgeMesh.edges)
+        {
+            if (edges.source.position == v.position)
+            {
+                faces.Add(edges.face);
+            }
+        }
+        return faces.ToArray();
+    }
+
+    public static HalfEdge[] GetNeighborsEdges(Vertex v, HalfEdgeMesh halfEdgeMesh)
+    {
+        List<HalfEdge> edges = new List<HalfEdge>();
+        foreach (var edge in halfEdgeMesh.edges)
+        {
+            if (edge.source.position == v.position)
+            {
+                edges.Add(edge);
+            }
+        }
+        return edges.ToArray();
+    }
+
+    public static void GetNeighborsFacesEdges(Vertex v, HalfEdgeMesh halfEdgeMesh, out Face[] faces, out HalfEdge[] edges)
+    {
+        faces = GetNeighborsFaces(v, halfEdgeMesh);
+        edges = GetNeighborsEdges(v, halfEdgeMesh);
+    }
+
+
     public static Vertex VertexPoint(Vertex v, HalfEdgeMesh halfEdgeMesh)
     {
         Face[] faces;
         HalfEdge[] edges;
 
         halfEdgeMesh.GetNeighborsFacesEdges(v, out faces, out edges);
-
+        //GetNeighborsFacesEdges(v, halfEdgeMesh, out faces, out edges);
         int n = edges.Length;
         if (n >= 3)
         {
