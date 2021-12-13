@@ -85,6 +85,9 @@ public class HalfEdgeMesh
         faces.Add(f);
     }
 
+    /// <summary>
+    /// Set Twin Edges with neighbors informations
+    /// </summary>
     public void SetTwinEdges()
     {
         List<HalfEdge> foundEdges = new List<HalfEdge>();

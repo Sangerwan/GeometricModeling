@@ -177,6 +177,14 @@ public class CatmullClark : MonoBehaviour
     #endregion
 
     #region Catmull Clark services
+
+    /// <summary>
+    /// Compute Face Point
+    /// 
+    /// Average of each point in face
+    /// </summary>
+    /// <param name="f"></param>
+    /// <returns></returns>
     public static Vertex FacePoint(Face f)
     {
         Vector3 vertex1 = f.edge.source.position;
@@ -188,6 +196,15 @@ public class CatmullClark : MonoBehaviour
         return new Vertex(result);
     }
 
+    /// <summary>
+    /// Compute Edge Point
+    /// 
+    /// Average of Face Point of adjacent faces and the center of the edge
+    /// 
+    /// In case of boundary edge the Edge Point is the center of the edge
+    /// </summary>
+    /// <param name="edge"></param>
+    /// <returns></returns>
     public static Vertex EdgePoint(HalfEdge edge)
     {
         Vertex vertex1 = edge.source;
@@ -206,6 +223,13 @@ public class CatmullClark : MonoBehaviour
         return result;
     }
 
+    /// <summary>
+    /// Compute new Vertex Point
+    /// 
+    /// </summary>
+    /// <param name="v"></param>
+    /// <param name="halfEdgeMesh"></param>
+    /// <returns></returns>
     public static Vertex VertexPoint(Vertex v, HalfEdgeMesh halfEdgeMesh)
     {
         Face[] faces;
@@ -219,12 +243,15 @@ public class CatmullClark : MonoBehaviour
             Vector3 Q = new Vector3();
             Vector3 R = new Vector3();
 
+            //Compute Q : Average of Face Points
             for (int i = 0; i < faces.Length; i++)
             {
                 Q += FacePoint(faces[i]).position;
             }
             Q /= faces.Length;
 
+
+            //Compute R : Average of mid Edge
             for (int i = 0; i < edges.Length; i++)
             {
                 R += (edges[i].source.position + edges[i].nextEdge.source.position) / 2;
@@ -233,7 +260,7 @@ public class CatmullClark : MonoBehaviour
 
             return new Vertex(Q / n + 2 * R / n + (n - 3) * v.position / n, v.index);
         }
-        else //boundary
+        else //Boundary
         {
             return v;
         }
@@ -285,7 +312,7 @@ public class CatmullClark : MonoBehaviour
          *       __________
          *      |          |
          *      |          |
-         *     1|          |3      e.g. : start edge = 2 ==> we need to create edge 3 and 4
+         *     1|          |3      e.g. : start edge index = 2 ==> we need to create edge 3 and 4
          *      |          |
          *      |__________|
          *            0
@@ -325,7 +352,6 @@ public class CatmullClark : MonoBehaviour
         //List of new points
         List<Vertex> facePoints = new List<Vertex>();
         List<Vertex> edgePoints = new List<Vertex>();
-
 
         //Compute new vertex poisition
         for (int i = 0; i < vertices.Count; i++)
