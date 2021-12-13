@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 public class CatmullClark : MonoBehaviour
 {
-    // Start is called before the first frame update
 
     void explications()
     {
@@ -56,6 +55,7 @@ public class CatmullClark : MonoBehaviour
          */
     }
 
+    #region conversion
     public static void TrianglesToQuads(Mesh mesh, out int[] quads)
     {
         Vector3[] triVertices = mesh.vertices;
@@ -87,7 +87,7 @@ public class CatmullClark : MonoBehaviour
             halfEdgeMesh.vertices.Add(new Vertex(vertices[i], i));
         }
 
-        //store neighbors faces 
+        //store neighbors faces for later
         Dictionary<Vector3, List<Face>> neighborsFaces = new Dictionary<Vector3, List<Face>>();
 
         int index = 0;
@@ -174,7 +174,9 @@ public class CatmullClark : MonoBehaviour
 
         return newMesh;
     }
+    #endregion
 
+    #region Catmull Clark services
     public static Vertex FacePoint(Face f)
     {
         Vector3 vertex1 = f.edge.source.position;
@@ -204,46 +206,13 @@ public class CatmullClark : MonoBehaviour
         return result;
     }
 
-    public static Face[] GetNeighborsFaces(Vertex v, HalfEdgeMesh halfEdgeMesh)
-    {
-        List<Face> faces = new List<Face>();
-        foreach (var edges in halfEdgeMesh.edges)
-        {
-            if (edges.source.position == v.position)
-            {
-                faces.Add(edges.face);
-            }
-        }
-        return faces.ToArray();
-    }
-
-    public static HalfEdge[] GetNeighborsEdges(Vertex v, HalfEdgeMesh halfEdgeMesh)
-    {
-        List<HalfEdge> edges = new List<HalfEdge>();
-        foreach (var edge in halfEdgeMesh.edges)
-        {
-            if (edge.source.position == v.position)
-            {
-                edges.Add(edge);
-            }
-        }
-        return edges.ToArray();
-    }
-
-    public static void GetNeighborsFacesEdges(Vertex v, HalfEdgeMesh halfEdgeMesh, out Face[] faces, out HalfEdge[] edges)
-    {
-        faces = GetNeighborsFaces(v, halfEdgeMesh);
-        edges = GetNeighborsEdges(v, halfEdgeMesh);
-    }
-
-
     public static Vertex VertexPoint(Vertex v, HalfEdgeMesh halfEdgeMesh)
     {
         Face[] faces;
         HalfEdge[] edges;
 
         halfEdgeMesh.GetNeighborsFacesEdges(v, out faces, out edges);
-        //GetNeighborsFacesEdges(v, halfEdgeMesh, out faces, out edges);
+
         int n = edges.Length;
         if (n >= 3)
         {
@@ -343,24 +312,6 @@ public class CatmullClark : MonoBehaviour
     }
 
     /// <summary>
-    /// Catmull clark subdivision surface algorithm
-    /// </summary>
-    /// <param name="mesh">mesh tto subdivide</param>
-    /// <param name="count">number of iteration</param>
-    /// <returns></returns>
-    public static Mesh Catmull_Clark(Mesh mesh, int count = 1)
-    {
-        Mesh newMesh = mesh;
-        for (int i = 0; i < count; i++)
-        {
-            HalfEdgeMesh halfEdgeMesh = VertexFaceToHalfEdge(newMesh);
-            Subdivide(halfEdgeMesh);
-            newMesh = HalfEdgeToVertexFace(halfEdgeMesh);
-        }
-        return newMesh;
-    }
-
-    /// <summary>
     /// Subdivision algorithm
     /// </summary>
     /// <param name="halfEdgeMesh"></param>
@@ -452,4 +403,24 @@ public class CatmullClark : MonoBehaviour
         }
         halfEdgeMesh.neighborsFaces = null;
     }
+    #endregion
+
+    /// <summary>
+    /// Catmull clark subdivision surface algorithm
+    /// </summary>
+    /// <param name="mesh">mesh tto subdivide</param>
+    /// <param name="count">number of iteration</param>
+    /// <returns></returns>
+    public static Mesh Catmull_Clark(Mesh mesh, int count = 1)
+    {
+        Mesh newMesh = mesh;
+        for (int i = 0; i < count; i++)
+        {
+            HalfEdgeMesh halfEdgeMesh = VertexFaceToHalfEdge(newMesh);
+            Subdivide(halfEdgeMesh);
+            newMesh = HalfEdgeToVertexFace(halfEdgeMesh);
+        }
+        return newMesh;
+    }
+ 
 }

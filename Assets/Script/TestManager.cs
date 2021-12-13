@@ -41,12 +41,16 @@ public class TestManager : MonoBehaviour
     {
         #region Segment
         {
+
+
             GUIStyle myStyle = new GUIStyle();
             myStyle.fontSize = 16;
 
             Vector3 posA = PointA.transform.position;
             Vector3 posB = PointB.transform.position;
-
+            
+            
+            
             Gizmos.color = Color_Point_A;
             myStyle.normal.textColor = Color_Point_A;
             Gizmos.DrawSphere(posA, Size_Point_AB);
@@ -88,10 +92,10 @@ public class TestManager : MonoBehaviour
 
                 float distance = Vector3.Dot(normalPlane, OC);
 
-                Vector3 u = Plane.transform.right / Plane.transform.forward.magnitude;
+                Vector3 u = Plane.transform.right / Plane.transform.right.magnitude;
                 Vector3 v = Plane.transform.forward / Plane.transform.forward.magnitude;
 
-                Vector3 OH = Vector3.Dot(posC, u) * u + Vector3.Dot(posC, v) * v + Plane.transform.position.y * normalPlane;
+                Vector3 OH = Vector3.Dot(OC, u) * u + Vector3.Dot(OC, v) * v + Plane.transform.position;
 
                 Gizmos.DrawSphere(OH, Size_Point_C);
                 Handles.Label(OH, "H", myStyle);
@@ -123,16 +127,8 @@ public class TestManager : MonoBehaviour
             }
             #endregion
 
-
-            //myStyle.normal.textColor = Color_Point_B;
-            //Gizmos.DrawSphere(posB, Size_Point_AB);
-            //Handles.Label(posB, "B", myStyle);
-
-            //Gizmos.color = Color_Segment_AB;
-            //Gizmos.DrawLine(posA, posB);
         }
         #endregion
-
 
         #region Plane
         {
@@ -140,7 +136,7 @@ public class TestManager : MonoBehaviour
             Vector3 interNormal;
             Segment segment = new Segment { pt1 = PointA.transform.position, pt2 = PointB.transform.position };
             Vector3 norm = Plane.transform.up;
-            GeometricClass.Plane plane = new GeometricClass.Plane { Normal = norm, d = Plane.transform.position.y };
+            GeometricClass.Plane plane = new GeometricClass.Plane { Normal = norm, d = Vector3.Dot(norm, Plane.transform.position) };
             if (InterSegmentPlane(segment, plane, out interpt, out interNormal))
             {
                 Gizmos.color = Color_Intersect_Plane;

@@ -54,7 +54,6 @@ public class HalfEdge
     }
 }
 
-
 public class HalfEdgeMesh
 {
     int data = 0;
@@ -145,7 +144,6 @@ public class HalfEdgeMesh
         faces = GetNeighborsFaces(v);
         edges = GetNeighborsEdges(v);
     }
-
 }
 
 
